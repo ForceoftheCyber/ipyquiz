@@ -184,9 +184,9 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> w
 class Question(TypedDict):
     type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
     body: str
-    answers: list[str]  # Options
+    answers: list[str] | None # Options
     answer: list[str] | str  # Correct answer
-    notes: list[str]
+    notes: list[str] | None
 
 
 def make_question(question: Question) -> widgets.Widget:
@@ -197,13 +197,16 @@ def make_question(question: Question) -> widgets.Widget:
         case "MULTIPLE_CHOICE" if len(question["answer"]) > 0:
             # Multiple choice, single answer
             # TODO: Add validation of format?
-
+            if "answers" not in question or not question["answers"]:
+                raise AttributeError("Multiple choice should have list of possible answers (options)")
             return multiple_choice(question=question["body"], options=question["answers"], correct_option=question["answer"][0])
         case "MULTIPLE_CHOICE":
             # Multiple choice, multiple answer
             if isinstance(question["answer"], str):
                 raise TypeError(
                     "question['answer'] should be a list when question type is multiple choice")
+            if "answers" not in question or not question["answers"]:
+                raise AttributeError("Multiple choice should have list of possible answers (options)")
             return multiple_answers(question=question["body"], options=question["answers"], correct_answers=question["answer"])
         case "NUMERIC":
             if isinstance(question["answer"], list):
