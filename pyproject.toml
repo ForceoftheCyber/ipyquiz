@@ -1,5 +1,5 @@
 [project]
-name = "mip_matching"
+name = "ipyquiz"
 version = "0.0.1"
 description = "Quizzes for Jupyter"
 dependencies = [
