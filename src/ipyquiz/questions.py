@@ -1,4 +1,4 @@
-from typing import TypedDict, Literal
+from typing import TypedDict, Literal, NotRequired
 import json
 import ipywidgets as widgets
 from IPython.display import display
@@ -184,9 +184,9 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> w
 class Question(TypedDict):
     type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
     body: str
-    answers: list[str] | None # Options
+    answers: NotRequired[list[str]] # Options
     answer: list[str] | str  # Correct answer
-    notes: list[str] | None
+    notes: NotRequired[list[str]]
 
 
 def make_question(question: Question) -> widgets.Widget:
