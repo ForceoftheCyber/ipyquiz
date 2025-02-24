@@ -194,7 +194,7 @@ def make_question(question: Question) -> widgets.Widget:
     Delegates to the other questions functions based on question type and returns a widget.
     """
     match question["type"]:
-        case "MULTIPLE_CHOICE" if len(question["answer"]) > 0:
+        case "MULTIPLE_CHOICE" if len(question["answer"]) == 1:
             # Multiple choice, single answer
             # TODO: Add validation of format?
             if "answers" not in question or not question["answers"]:
@@ -229,7 +229,7 @@ def display_questions(questions: list[Question]):
         display(make_question(question))
 
 
-def display_json(questions: str) -> widgets.Widget:
+def display_json(questions: str):
     """
     Helper function for displaying based on the json-string from the FaceIT-format. 
     """
