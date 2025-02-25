@@ -5,6 +5,7 @@ description = "Quizzes for Jupyter"
 dependencies = [
     "ipython",
     "ipywidgets",
+    "requests"
 ]
 
 
