@@ -1,2 +1,2 @@
-from .questions import display_questions, display_json
-from .faceit import display_simple_search
+from ipyquiz.questions import display_questions, display_json
+from ipyquiz.faceit import display_simple_search
