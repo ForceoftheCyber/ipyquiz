@@ -1,5 +1,5 @@
 import requests
-from questions import display_questions, Question
+from .questions import display_questions, Question
 
 API_BASE_URL = "https://dev.faceittools.com/questions/fetch_questions/"
 
