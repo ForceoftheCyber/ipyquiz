@@ -1,2 +1,0 @@
-from ipyquiz.questions import display_questions, display_json
-from ipyquiz.faceit import display_simple_search
