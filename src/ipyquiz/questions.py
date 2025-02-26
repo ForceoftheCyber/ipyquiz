@@ -180,13 +180,21 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> w
 
     return generic_question(question=question, input_widget=input_widget, evaluation_function=eval_func, feedback=feedback)
 
-def no_input_question(question: str, solution: str) -> widgets.Widget:
+def no_input_question(question: str, solution: list[str]) -> widgets.Widget:
     """
-    Questions with no input. Reveals solution on button click.
+    Questions with no input. 
+    Reveals solution on button click if solution exists.
     
     Corresponds to the FaceIT question type: TEXT.
     """
     title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+
+    if len(solution) == 0:
+        # If no solution provided
+        no_solution_widget = widgets.HTML(value="<p><i>This question has no suggested solution.</i></p>")
+        return widgets.VBox([title_widget, no_solution_widget])
+
+    # Solution has been provided
 
     solution_box = widgets.HTMLMath(value=f"<p>{solution}</p>")
     solution_box.layout.display = "none"  # Initially hidden
@@ -240,7 +248,9 @@ def make_question(question: Question) -> widgets.Widget:
             return numeric_input(question=question["body"], correct_answer=float(question["answer"]))
 
         case "TEXT":
-            return no_input_question(question=question["body"], solution=question["answer"])
+            solution_notes = question["notes"] if "notes" in question else []
+
+            return no_input_question(question=question["body"], solution=solution_notes)
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
