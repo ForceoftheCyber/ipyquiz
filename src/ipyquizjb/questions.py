@@ -1,7 +1,7 @@
 from typing import TypedDict, Literal, NotRequired
 import json
 import ipywidgets as widgets
-from IPython.display import display
+from IPython.display import display, Latex
 from collections.abc import Callable
 from typing import Any
 
@@ -94,7 +94,8 @@ def generic_question(question: str,
 
     """
 
-    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    # title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    title_widget = Latex(f"<h3>{question}</h3>")
     description_widget = widgets.HTMLMath(value=f"<p>{description}</p>")
 
     output = widgets.Output()
