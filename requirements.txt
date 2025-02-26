@@ -1,0 +1,2 @@
+ipyquiz @ git+https://github.com/ForceoftheCyber/ipyquiz.git
+ipykernel
