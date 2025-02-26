@@ -180,6 +180,29 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> w
 
     return generic_question(question=question, input_widget=input_widget, evaluation_function=eval_func, feedback=feedback)
 
+def no_input_question(question: str, solution: str) -> widgets.Widget:
+    """
+    Questions with no input. Reveals solution on button click.
+    
+    Corresponds to the FaceIT question type: TEXT.
+    """
+    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+
+    solution_box = widgets.HTMLMath(value=f"<p>{solution}</p>")
+    solution_box.layout.display = "none"  # Initially hidden
+
+    def reveal_solution(button):
+        solution_box.layout.display = "block"
+
+    button = widgets.Button(description="Show solution", icon="check",
+                            style=dict(
+                                button_color="lightgreen"
+                            ))
+    
+    button.on_click(reveal_solution)
+
+    return widgets.VBox([title_widget, button, solution_box])
+
 
 class Question(TypedDict):
     type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
@@ -200,6 +223,7 @@ def make_question(question: Question) -> widgets.Widget:
             if "answers" not in question or not question["answers"]:
                 raise AttributeError("Multiple choice should have list of possible answers (options)")
             return multiple_choice(question=question["body"], options=question["answers"], correct_option=question["answer"][0])
+
         case "MULTIPLE_CHOICE":
             # Multiple choice, multiple answer
             if isinstance(question["answer"], str):
@@ -208,22 +232,23 @@ def make_question(question: Question) -> widgets.Widget:
             if "answers" not in question or not question["answers"]:
                 raise AttributeError("Multiple choice should have list of possible answers (options)")
             return multiple_answers(question=question["body"], options=question["answers"], correct_answers=question["answer"])
+
         case "NUMERIC":
             if isinstance(question["answer"], list):
                 raise TypeError(
                     "question['answer'] should not be a list when question type is multiple choice")
             return numeric_input(question=question["body"], correct_answer=float(question["answer"]))
+
         case "TEXT":
-            # return generic_question(question=question["body"], )
-            # TODO
-            pass
+            return no_input_question(question=question["body"], solution=question["answer"])
+
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
 
 
 def display_questions(questions: list[Question]):
     """
-
+    Displays a list of questions.
     """
     for question in questions:
         display(make_question(question))
