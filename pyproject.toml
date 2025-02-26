@@ -1,5 +1,5 @@
 [project]
-name = "ipyquiz"
+name = "ipyquiz-jb"
 version = "0.2.4"
 description = "Quizzes for Jupyter"
 dependencies = [
@@ -7,7 +7,22 @@ dependencies = [
     "ipywidgets",
     "requests"
 ]
+authors = [
+  { name="Jørgen Galdal", email="jorgen.4@live.no" },
+#   TODO: Add more authors
+]
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
 
+# [project.urls]
+# Homepage = "https://github.com/pypa/sampleproject"
+# Issues = "https://github.com/pypa/sampleproject/issues"
 
 [build-system]
 requires = ["hatchling"]
