@@ -1,2 +1,7 @@
-ipyquiz @ git+https://github.com/ForceoftheCyber/ipyquiz.git
 ipykernel
+
+# Use only one of these lines to install this package
+# Use this line if you want to install from github repo:
+# ipyquizjb @ git+https://github.com/ForceoftheCyber/ipyquiz.git
+# Use this line if you want to install from local repo:
+-e .
