@@ -196,11 +196,17 @@ def no_input_question(question: str, solution: list[str]) -> widgets.Widget:
 
     # Solution has been provided
 
-    solution_box = widgets.HTMLMath(value=f"<p>{solution}</p>")
+    solution_box = widgets.VBox([widgets.HTMLMath(value=f"<p>{sol}</p>") for sol in solution])
     solution_box.layout.display = "none"  # Initially hidden
 
     def reveal_solution(button):
-        solution_box.layout.display = "block"
+        if solution_box.layout.display == "none":
+            solution_box.layout.display = "block"
+            button.description = "Hide solution"
+        else:
+            solution_box.layout.display = "none"
+            button.description = "Show solution"
+
 
     button = widgets.Button(description="Show solution", icon="check",
                             style=dict(
