@@ -5,7 +5,6 @@ from IPython.display import display
 from collections.abc import Callable
 from typing import Any
 
-
 def multiple_choice(question: str,
                     options: list[Any],
                     correct_option: Any,
@@ -18,7 +17,8 @@ def multiple_choice(question: str,
     options_widget = widgets.ToggleButtons(
         options=options,
         value=None,
-        disabled=False
+        disabled=False,
+        style={"button_width": "auto"},
     )
 
     def eval_func(widget):
