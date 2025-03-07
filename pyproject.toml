@@ -9,6 +9,8 @@ dependencies = [
 ]
 authors = [
   { name="Jørgen Galdal", email="jorgen.4@live.no" },
+  { name="Raviksan Navaratnarajah", email="raviksann@outlook.com" },
+  { name="Synne Raad", email="synnera@live.com" },
 #   TODO: Add more authors
 ]
 readme = "README.md"
