@@ -94,7 +94,7 @@ def generic_question(question: str,
 
     """
 
-    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    title_widget = question_title_widget(question)
     description_widget = widgets.HTMLMath(value=f"<p>{description}</p>")
 
     output = widgets.Output()
@@ -180,6 +180,14 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> w
 
     return generic_question(question=question, input_widget=input_widget, evaluation_function=eval_func, feedback=feedback)
 
+def question_title_widget(question: str) -> widgets.Widget:
+    """
+    Wrapper for widgets.HTMLMath to do latex/tikz preprocessing
+    """
+    tikz_processed = question.replace('\\begin{tikzpicture}', '<script type="text/tikz">\\begin{tikzpicture}').replace('\\end{tikzpicture}', '\\end{tikzpicture}</script>')
+
+    return widgets.HTMLMath(value=f"<h3>{tikz_processed}</h3>")
+
 def no_input_question(question: str, solution: list[str]) -> widgets.Widget:
     """
     Questions with no input. 
@@ -187,7 +195,7 @@ def no_input_question(question: str, solution: list[str]) -> widgets.Widget:
     
     Corresponds to the FaceIT question type: TEXT.
     """
-    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    title_widget = question_title_widget(question)
 
     if len(solution) == 0:
         # If no solution provided
