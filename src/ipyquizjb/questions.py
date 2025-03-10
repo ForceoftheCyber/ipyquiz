@@ -3,7 +3,10 @@ import json
 import ipywidgets as widgets
 from IPython.display import display
 from collections.abc import Callable
-from typing import Any
+# Uses any because the pyodide kernel is on a Python version that don't support typing generics.
+from typing import Any 
+from ipyquizjb.widgets import RadioButtons
+
 
 def multiple_choice(question: str,
                     options: list[Any],
@@ -14,17 +17,15 @@ def multiple_choice(question: str,
 
     Delegates to generic_question.
     """
-    options_widget = widgets.ToggleButtons(
-        options=options,
-        value=None,
-        disabled=False,
-        style={"button_width": "auto"},
-    )
+    options_widget = RadioButtons(options)
 
-    def eval_func(widget):
-        if widget.value is None:
-            return None
-        return widget.value == correct_option
+    def eval_func(box: widgets.Box):
+        for checkbox in box.children:
+            if checkbox.value:
+                return checkbox.description == correct_option
+
+        # No chosen answer
+        return None
 
     return generic_question(question=question,
                             input_widget=options_widget,
@@ -41,18 +42,18 @@ def multiple_answers(question: str,
     Delegates to generic_question.
 
     """
-    buttons = [widgets.ToggleButton(
+    checkboxes = [widgets.Checkbox(
         value=False, description=option) for option in options]
 
     def feedback(evaluation_result):
         if evaluation_result == None:
             return "Please pick an answer"
         elif evaluation_result == 0:
-            return "Correct answer"
+            return "Incorrect answer"
         else:
             return f"Correct answers: {evaluation_result}/{len(correct_answers)}"
 
-    def eval_func(widget: widgets.HBox):
+    def eval_func(widget: widgets.Box):
         answers = set(
             button.description for button in widget.children if button.value)
         if len(answers) == 0:
@@ -61,7 +62,7 @@ def multiple_answers(question: str,
         return len(answers.intersection(correct_answers)) - len(answers.difference(correct_answers))
 
     return generic_question(question=question,
-                            input_widget=widgets.HBox(buttons),
+                            input_widget=widgets.VBox(checkboxes),
                             evaluation_function=eval_func,
                             feedback=feedback)
 
