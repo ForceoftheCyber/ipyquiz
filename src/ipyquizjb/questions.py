@@ -43,7 +43,8 @@ def multiple_answers(question: str,
 
     """
     checkboxes = [widgets.Checkbox(
-        value=False, description=option) for option in options]
+        value=False, description=option, indent=False, 
+            layout={'width': 'max-content'}) for option in options]
 
     def feedback(evaluation_result):
         if evaluation_result == None:

@@ -18,7 +18,9 @@ def RadioButtons(options: list[Any]) -> widgets.VBox:
 
     checkboxes = []
     for option in options:
-        checkbox = widgets.Checkbox(value=False, description=option)
+        checkbox = widgets.Checkbox(value=False, description=option, indent=False, 
+            layout={'width': 'max-content'})
+        
         checkbox.observe(changeHandler, names="value")
         checkboxes.append(checkbox)     
 
