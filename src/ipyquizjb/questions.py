@@ -1,9 +1,13 @@
 from typing import TypedDict, Literal, NotRequired
 import json
 import ipywidgets as widgets
-from IPython.display import display
+from IPython.display import display, HTML
 from collections.abc import Callable
 from typing import Any
+
+# Class name used in HTML for identifying quiz buttons
+QUIZ_BUTTON_CLASS_NAME = "ipyquizjb-option-button"
+
 
 def multiple_choice(question: str,
                     options: list[Any],
@@ -20,6 +24,7 @@ def multiple_choice(question: str,
         disabled=False,
         style={"button_width": "auto"},
     )
+    options_widget.add_class(QUIZ_BUTTON_CLASS_NAME)
 
     def eval_func(widget):
         if widget.value is None:
@@ -41,8 +46,9 @@ def multiple_answers(question: str,
     Delegates to generic_question.
 
     """
-    buttons = [widgets.ToggleButton(
-        value=False, description=option) for option in options]
+    buttons = widgets.HBox([widgets.ToggleButton(
+        value=False, description=option) for option in options])
+    buttons.add_class(QUIZ_BUTTON_CLASS_NAME)
 
     def feedback(evaluation_result):
         if evaluation_result == None:
@@ -61,7 +67,7 @@ def multiple_answers(question: str,
         return len(answers.intersection(correct_answers)) - len(answers.difference(correct_answers))
 
     return generic_question(question=question,
-                            input_widget=widgets.HBox(buttons),
+                            input_widget=buttons,
                             evaluation_function=eval_func,
                             feedback=feedback)
 
@@ -265,9 +271,28 @@ def make_question(question: Question) -> widgets.Widget:
 def display_questions(questions: list[Question]):
     """
     Displays a list of questions.
+
+    All displaying of questions should go through this function.
     """
+    # Fix for rendering Math in ipywidget content
+    display(HTML("<script>MathJax.typeset()</script>"))
+
     for question in questions:
         display(make_question(question))
+
+    # Fix for rendering Math in quiz-buttons
+    display(HTML(f"""<script>
+for (button of document.getElementsByClassName("{QUIZ_BUTTON_CLASS_NAME}")) {{
+	MathJax.Hub.Queue(['Typeset', MathJax.Hub, button])
+}}
+</script>"""))
+    
+    """NOTE:
+    The reason the first MathJax script uses version 3 syntax and the second uses
+    version 2 syntax is due to the fact that IPython.display.HTML seems to change
+    version to version 2. 
+    Doing it like this works.
+    """
 
 
 def display_json(questions: str):
