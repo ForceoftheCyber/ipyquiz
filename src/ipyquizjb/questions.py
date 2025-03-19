@@ -18,8 +18,15 @@ def multiple_choice(question: str,
 
     Delegates to generic_question.
     """
+
+    # Displaying alternatives
+    numbered_options = [(str(i), opt) for i, opt in enumerate(options, start=1)]
+    alternatives = widgets.VBox([
+        widgets.HTMLMath(value=f"<h4>{i}: {alternative}</h4>") for i, alternative in numbered_options
+    ])
+
     options_widget = widgets.ToggleButtons(
-        options=options,
+        options=numbered_options,
         value=None,
         disabled=False,
         style={"button_width": "auto"},
@@ -34,7 +41,8 @@ def multiple_choice(question: str,
     return generic_question(question=question,
                             input_widget=options_widget,
                             evaluation_function=eval_func,
-                            description=description)
+                            description=description,
+                            additional_widget=alternatives)
 
 
 def multiple_answers(question: str,
@@ -46,21 +54,32 @@ def multiple_answers(question: str,
     Delegates to generic_question.
 
     """
+    # Displaying alternatives
+    numbered_options = [(str(i), opt) for i, opt in enumerate(options, start=1)]
+    alternatives = widgets.VBox([
+        widgets.HTMLMath(f"{i}: {alternative}") for i, alternative in numbered_options
+    ])
+
     buttons = widgets.HBox([widgets.ToggleButton(
-        value=False, description=option) for option in options])
+        value=False, 
+        description=i
+        ) for i, _ in numbered_options])
     buttons.add_class(QUIZ_BUTTON_CLASS_NAME)
 
     def feedback(evaluation_result):
         if evaluation_result == None:
             return "Please pick an answer"
         elif evaluation_result == 0:
-            return "Correct answer"
+            return "Incorrect answer"
         else:
             return f"Correct answers: {evaluation_result}/{len(correct_answers)}"
 
     def eval_func(widget: widgets.HBox):
         answers = set(
-            button.description for button in widget.children if button.value)
+            options[int(button.description) - 1] # -1 to correct for 1-index enumeration
+            for button in widget.children if button.value)
+        
+        print(answers)
         if len(answers) == 0:
             return None
         # Evaluates number of correct choices minus number of incorrect choices.
@@ -69,6 +88,7 @@ def multiple_answers(question: str,
     return generic_question(question=question,
                             input_widget=buttons,
                             evaluation_function=eval_func,
+                            additional_widget=alternatives,
                             feedback=feedback)
 
 
@@ -85,6 +105,7 @@ def generic_question(question: str,
                      input_widget: widgets.Widget,
                      evaluation_function: Callable[[widgets.Widget], Any],
                      description: str = "",
+                     additional_widget: widgets.Widget | widgets.Box | None = None,
                      feedback: Callable[[Any], str] = standard_feedback) -> widgets.Widget:
     """
     Abstract question function used by the other question types to display questions.
@@ -117,11 +138,16 @@ def generic_question(question: str,
     button.on_click(_inner_check)
 
     layout = widgets.VBox([title_widget,
-                           description_widget,
-                           widgets.HBox([input_widget],
-                                        layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),
-                           widgets.VBox([button, output],
+                           description_widget]
+                           + ([additional_widget] if additional_widget else [])
+                           + [widgets.HBox(
+                               [widgets.HTML("Select your answer:"), input_widget],
+                                        layout=widgets.Layout(padding="10px 20px 10px 0px")),
+                           widgets.VBox(
+                               [button, output],
                                         layout=widgets.Layout(margin="10px 10px 0px 0px"))])
+    
+    print(layout)
 
     return layout
 
@@ -275,7 +301,19 @@ def display_questions(questions: list[Question]):
     All displaying of questions should go through this function.
     """
     # Fix for rendering Math in ipywidget content
-    display(HTML("<script>MathJax.typeset()</script>"))
+    display(HTML("""<script>
+                 if (MathJax.version.startsWith("3")) {
+                    MathJax.typeset() 
+                 } else {
+                 MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+                 }
+                 </script>"""))
+    """NOTE:
+    The reason the first MathJax script uses version 3 or 2 syntax and the second uses
+    version 2 syntax is due to the fact that IPython.display.HTML seems to change
+    version to version 2. And when it is in effect seems to depend.
+    Doing it like this works.
+    """
 
     for question in questions:
         display(make_question(question))
@@ -287,12 +325,7 @@ for (button of document.getElementsByClassName("{QUIZ_BUTTON_CLASS_NAME}")) {{
 }}
 </script>"""))
     
-    """NOTE:
-    The reason the first MathJax script uses version 3 syntax and the second uses
-    version 2 syntax is due to the fact that IPython.display.HTML seems to change
-    version to version 2. 
-    Doing it like this works.
-    """
+   
 
 
 def display_json(questions: str):
