@@ -5,9 +5,8 @@ from IPython.display import display
 from collections.abc import Callable
 from typing import Any
 
-type EvaluationFunction = Callable[[
-    widgets.Widget | widgets.Box], float | None]
-type QuestionWidgetPackage = tuple[widgets.Box, Callable[[], float | None]]
+type EvaluationFunction = Callable[[], float | None]
+type QuestionWidgetPackage = tuple[widgets.Box, EvaluationFunction]
 
 
 def multiple_choice(question: str,
@@ -26,10 +25,10 @@ def multiple_choice(question: str,
         style={"button_width": "auto"},
     )
 
-    def eval_func(widget):
-        if widget.value is None:
+    def eval_func():
+        if options_widget.value is None:
             return None
-        return float(widget.value == correct_option)
+        return float(options_widget.value == correct_option)
 
     return generic_question(question=question,
                             input_widget=options_widget,
@@ -57,11 +56,11 @@ def multiple_answers(question: str,
         else:
             return f"Correct answers: {evaluation_result}/{len(correct_answers)}"
 
-    def eval_func(widget: widgets.HBox):
+    def eval_func():
         # Returns the proportion of correct answers.
 
         answers = set(
-            button.description for button in widget.children if button.value)
+            button.description for button in buttons if button.value)
         if len(answers) == 0:
             return None
 
@@ -111,7 +110,7 @@ def generic_question(question: str,
     def _inner_check(button):
         with output:
             output.outputs = [
-                {'name': 'stdout', 'text': feedback(evaluation_function(input_widget)), 'output_type': 'stream'}]
+                {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
 
     button = widgets.Button(description="Check answer", icon="check",
                             style=dict(
@@ -126,9 +125,7 @@ def generic_question(question: str,
                            widgets.VBox([button, output],
                                         layout=widgets.Layout(margin="10px 10px 0px 0px"))])
 
-    def external_evaluation_function(): return evaluation_function(input_widget)
-
-    return layout, external_evaluation_function
+    return layout, evaluation_function
 
 
 def singleton_group():
@@ -147,10 +144,10 @@ def numeric_input(question: str, correct_answer: float) -> QuestionWidgetPackage
         value=None,
     )
 
-    def eval_func(widget):
-        if widget.value is None:
+    def eval_func():
+        if input_widget.value is None:
             return None
-        return float(widget.value == correct_answer)
+        return float(input_widget.value == correct_answer)
 
     return generic_question(question=question,
                             input_widget=input_widget,
@@ -176,8 +173,8 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> Q
         description="What is the name of your function?", placeholder="myFunction",
         style=dict(description_width="initial"))
 
-    def eval_func(widget):
-        function_name = widget.value
+    def eval_func():
+        function_name = input_widget.value
         if function_name not in globals():
             # Error handling
             return None
@@ -342,7 +339,9 @@ def question_group(questions: list[Question]) -> widgets.Box:
                             ))
     button.on_click(_inner_check)
 
-    questions_box = widgets.VBox(question_boxes)
+    questions_box = widgets.VBox(question_boxes, layout=dict(
+        border = "solid"
+    ))
 
     return widgets.VBox([questions_box, button, output])
 
