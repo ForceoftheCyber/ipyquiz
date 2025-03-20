@@ -6,8 +6,8 @@ from collections.abc import Callable
 from typing import Any
 
 type EvaluationFunction = Callable[[], float | None]
-type QuestionWidgetPackage = tuple[widgets.Box, EvaluationFunction]
-
+type FeedbackCallback = Callable[[], None]
+type QuestionWidgetPackage = tuple[widgets.Box, EvaluationFunction, FeedbackCallback]
 
 def multiple_choice(question: str,
                     options: list[Any],
@@ -107,25 +107,20 @@ def generic_question(question: str,
 
     output = widgets.Output()
 
-    def _inner_check(button):
+    def feedback_callback():
         with output:
             output.outputs = [
                 {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
 
-    button = widgets.Button(description="Check answer", icon="check",
-                            style=dict(
-                                button_color="lightgreen"
-                            ))
-    button.on_click(_inner_check)
 
     layout = widgets.VBox([title_widget,
                            description_widget,
                            widgets.HBox([input_widget],
                                         layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),
-                           widgets.VBox([button, output],
+                           widgets.VBox([output],
                                         layout=widgets.Layout(margin="10px 10px 0px 0px"))])
 
-    return layout, evaluation_function
+    return layout, evaluation_function, feedback_callback
 
 
 def singleton_group():
@@ -273,7 +268,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
 
-            return no_input_question(question=question["body"], solution=solution_notes), (lambda: True)
+            return no_input_question(question=question["body"], solution=solution_notes), (lambda: True), (lambda: True)
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
@@ -305,13 +300,14 @@ def question_group(questions: list[Question]) -> widgets.Box:
     Button (submit)
     Output
     """
-    question_boxes = []
-    eval_functions = []
 
-    for question in questions:
-        widget_box, eval_func = make_question(question)
-        question_boxes.append(widget_box)
-        eval_functions.append(eval_func)
+    question_boxes, eval_functions, feedback_callbacks = zip(*(make_question(question) for question in questions))
+
+    # for question in questions:
+    #     widget_box, eval_func, feedback = make_question(question)
+    #     question_boxes.append(widget_box)
+    #     eval_functions.append(eval_func)
+    #     feedback_callbacks.append(feedback)
 
     def group_evaluation():
         group_sum = 0
@@ -332,6 +328,8 @@ def question_group(questions: list[Question]) -> widgets.Box:
         with output:
             output.outputs = [
                 {'name': 'stdout', 'text': feedback(group_evaluation()), 'output_type': 'stream'}]
+            
+        for callback in feedback_callbacks: callback()
 
     button = widgets.Button(description="Check answer", icon="check",
                             style=dict(
