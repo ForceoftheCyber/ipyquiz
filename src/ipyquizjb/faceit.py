@@ -1,12 +1,16 @@
-import requests
-from ipyquizjb.questions import display_questions, display_json, Question
 import json
+
+import requests
+
+from ipyquizjb.questions import display_questions
 
 API_BASE_URL = "https://dev.faceittools.com/questions/fetch_questions/"
 
 def display_simple_search(body: str, max_questions: int = 10):
     """
-    params:
+    Fetches questions from FaceIT and displays them as a group.
+
+    Parameters:
     - body: search string in question body
     - max_questions: maximum number of questions displayed
     """
@@ -26,6 +30,7 @@ def display_simple_search(body: str, max_questions: int = 10):
 
         display_questions(questions=questions)       
     else:
+        # TODO: Error handling in cell
         raise requests.exceptions.RequestException(f"Fetch resulted in a HTTP error with status code: {response.status_code}")
     
 # # For debugging
