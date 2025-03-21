@@ -3,6 +3,7 @@ import ipywidgets as widgets
 from IPython.display import display, clear_output
 from collections.abc import Callable
 from typing import Any
+import random
 
 from ipyquizjb.types import QuestionWidgetPackage, Question
 from ipyquizjb.question_widgets import (
@@ -111,10 +112,16 @@ def display_questions(questions: list[Question], as_group=True):
     # TODO
 
 
-def question_group(questions: list[Question]) -> widgets.Output:
+def question_group(
+    questions: list[Question], num_displayed: int = None
+) -> widgets.Output:
     """
 
     Makes a widget of all the questions, along with a submit button.
+
+    Args:
+        questions (list[Question]):
+        num_displayed (int): The number of questions to be displayed at once.
 
     Upon submission, a separate field for output feedback for the whole group will be displayed.
     The feedback is determined by the aggregate evaluation functions of each question.
@@ -130,6 +137,8 @@ def question_group(questions: list[Question]) -> widgets.Output:
 
     """
 
+    num_displayed = num_displayed or len(questions)
+
     # A group of questions is referred to as a 'quiz'. Could rename back to group if confusing.
 
     output = widgets.Output()  # This the output for *this* group (or quiz).
@@ -137,12 +146,14 @@ def question_group(questions: list[Question]) -> widgets.Output:
     def render_quiz():
         with output:
             clear_output(wait=True)
-            # TODO: Shuffle list.
-            display(build_quiz()) # NOTE: As of now, this simply displays the questions in the same way as before. 
-                                  # NOTE: Maybe we could have a num_questions parameter in question_group,
-                                  # NOTE: and then shuffle the questions before rerendering a subset of the questions.
 
-    def build_quiz() -> widgets.Box:
+            # Suggestion:
+            random.shuffle(questions)
+            questions_displayed = questions[0:num_displayed]
+
+            display(build_quiz(questions_displayed))
+
+    def build_quiz(questions) -> widgets.Box:
         # Unpack
         question_boxes, eval_functions, feedback_callbacks = zip(
             *(make_question(question) for question in questions)
@@ -172,7 +183,6 @@ def question_group(questions: list[Question]) -> widgets.Output:
             if not is_approved:
                 retry_btn.layout.display = "block"
 
-            
         # The text output.
         feedback_output = widgets.Output()
 
