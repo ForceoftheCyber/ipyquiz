@@ -123,9 +123,6 @@ def generic_question(question: str,
     return layout, evaluation_function, feedback_callback
 
 
-def singleton_group():
-    # Unpack to not be part of a group?
-    pass
 
 
 def numeric_input(question: str, correct_answer: float) -> QuestionWidgetPackage:
@@ -269,11 +266,30 @@ def make_question(question: Question) -> QuestionWidgetPackage:
             solution_notes = question["notes"] if "notes" in question else []
 
             always_correct = (lambda: True)  # Will always be considered a right solution (does not influence score computation)
-            return no_input_question(question=question["body"], solution=solution_notes), always_correct, (lambda: True)
+            return no_input_question(question=question["body"], solution=solution_notes), always_correct, (lambda: None)
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
 
+
+def singleton_group(question: Question):
+    # Unpack to not be part of a group?
+
+    widget, _, callback = make_question(question)
+
+    if question["type"] == "TEXT":
+        return widget
+
+    def _inner_check(button):
+        callback()
+
+    button = widgets.Button(description="Check answer", icon="check",
+                            style=dict(
+                                button_color="lightgreen"
+                            ))
+    button.on_click(_inner_check)
+
+    return widgets.VBox([widget, button])
 
 def display_questions(questions: list[Question], as_group=True):
     """
@@ -287,7 +303,7 @@ def display_questions(questions: list[Question], as_group=True):
         for question in questions:
             # We are currently only interesting in displaying the question widget
             # and do not care about the eval
-            display(make_question(question)[0])
+            display(singleton_group(question))
     # TODO
 
 
@@ -345,11 +361,11 @@ def question_group(questions: list[Question]) -> widgets.Box:
     return widgets.VBox([questions_box, button, output])
 
 
-def display_json(questions: str):
+def display_json(questions: str, as_group=True):
     """
     Helper function for displaying based on the json-string from the FaceIT-format. 
     """
 
     questions_dict = json.loads(questions)
 
-    display_questions(questions_dict["questions"])
+    display_questions(questions_dict["questions"], as_group=as_group)
