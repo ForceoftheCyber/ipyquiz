@@ -28,15 +28,13 @@ def generic_question(question: str,
     The optional feedback function can be used to specify what feedback should
     be given based on the evaluation score.
 
-    params:
-    - question: Title of question
+    Parameters:
+    - question: Question body
     - input_widget: Widget used for getting user input
     - evaluation_function: a function returning an evaluation of the answer provided based on the input widget
     - feedback: A function giving textual feedback based on the result of the evaluation_function
-
     """
-
-    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    question_body_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
 
     output = widgets.Output()
     output.layout = {"padding": "0.25em", "margin": "0.2em"}
@@ -51,7 +49,7 @@ def generic_question(question: str,
             # Sets border color based on evaluation
             output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
-    layout = widgets.VBox([title_widget,
+    layout = widgets.VBox([question_body_widget,
                            widgets.HBox([input_widget],
                                         layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),
                            widgets.VBox([output],
