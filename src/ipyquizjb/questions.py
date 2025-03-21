@@ -1,4 +1,5 @@
 import json
+from ipyquizjb.utils import get_evaluation_color
 import ipywidgets as widgets
 from IPython.display import display
 
@@ -109,16 +110,16 @@ def question_group(questions: list[Question]) -> widgets.Box:
         return "Wrong!!"
 
     output = widgets.Output()
+    output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
     def _inner_check(button):
+        evaluation = group_evaluation()
         with output:
             output.outputs = [
-                {'name': 'stdout', 'text': feedback(group_evaluation()), 'output_type': 'stream'}]
+                {'name': 'stdout', 'text': feedback(evaluation), 'output_type': 'stream'}]
 
-            if (group_evaluation() == len(questions)):
-                output.layout = {"border": "solid lightgreen 1em"}
-            else:
-                output.layout = {"border": "solid red 1em"}
+            # Sets border color based on evaluation
+            output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
         for callback in feedback_callbacks:
             callback()

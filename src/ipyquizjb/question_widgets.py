@@ -1,6 +1,7 @@
 import ipywidgets as widgets
 from typing import Any
 from ipyquizjb.types import QuestionWidgetPackage, EvaluationFunction, FeedbackFunction
+from ipyquizjb.utils import get_evaluation_color
 
 
 def standard_feedback(evaluation_result: Any):
@@ -33,20 +34,17 @@ def generic_question(question: str,
     title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
 
     output = widgets.Output()
+    output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
     def feedback_callback():
+        evaluation = evaluation_function()
+        
         with output:
             output.outputs = [
-                {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
+                {'name': 'stdout', 'text': feedback(evaluation), 'output_type': 'stream'}]
 
-            if (evaluation_function() == 0):
-                output.layout = {"border": "solid red 1em"}
-
-            elif (evaluation_function() == None):
-                output.layout = {"border": "Solid yellow 1em"}
-
-            else:
-                output.layout = {"border": "solid lightgreen 1em"}
+            # Sets border color based on evaluation
+            output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
     layout = widgets.VBox([title_widget,
                            widgets.HBox([input_widget],
