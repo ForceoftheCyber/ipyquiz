@@ -1,5 +1,5 @@
 
-from typing import TypedDict, Literal, NotRequired
+from typing import TypedDict, Literal, NotRequired, Any
 from collections.abc import Callable
 import ipywidgets as widgets
 
@@ -7,6 +7,7 @@ type EvaluationFunction = Callable[[], float | None]
 type FeedbackCallback = Callable[[], None]
 type QuestionWidgetPackage = tuple[widgets.Box,
                                    EvaluationFunction, FeedbackCallback]
+type FeedbackFunction = Callable[[Any], str]
 
 
 class Question(TypedDict):
