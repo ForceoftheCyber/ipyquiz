@@ -268,7 +268,8 @@ def make_question(question: Question) -> QuestionWidgetPackage:
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
 
-            return no_input_question(question=question["body"], solution=solution_notes), (lambda: True), (lambda: True)
+            always_correct = (lambda: True)  # Will always be considered a right solution (does not influence score computation)
+            return no_input_question(question=question["body"], solution=solution_notes), always_correct, (lambda: True)
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
@@ -316,7 +317,7 @@ def question_group(questions: list[Question]) -> widgets.Box:
         return group_sum
 
     def feedback(evaluation: float):
-        max_score = len([q for q in questions if q["type"] != "TEXT"])
+        max_score = len(questions)
         if evaluation == max_score:
             return "All questions are correct!!"
 
