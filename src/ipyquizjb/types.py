@@ -1,4 +1,3 @@
-
 from typing import TypedDict, Literal, NotRequired, Any
 from collections.abc import Callable
 import ipywidgets as widgets
