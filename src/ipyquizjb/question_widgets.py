@@ -30,6 +30,9 @@ def generic_question(question: str,
         evaluation = evaluation_function()
         
         with output:
+            # Clear output in case of successive calls
+            output.clear_output()
+
             # Print feedback to output
             print(feedback(evaluation))
 

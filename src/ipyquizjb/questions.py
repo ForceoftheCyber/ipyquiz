@@ -85,6 +85,9 @@ def question_group(questions: list[Question]) -> widgets.Box:
         evaluation = group_evaluation()
 
         with output:
+            # Clear output in case of successive calls
+            output.clear_output()
+
             # Print feedback to output
             print(feedback(evaluation))
 
