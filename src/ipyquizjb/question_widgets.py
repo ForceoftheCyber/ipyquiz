@@ -131,12 +131,13 @@ def numeric_input(question: str, correct_answer: float) -> QuestionWidgetPackage
 
 def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> QuestionWidgetPackage:
     """
-    Code question that uses a textbox for the user to write.
+    Code question that uses a textbox for the user to write the name of a function.
     The provided function is tested against the expected_outputs.
 
     Delegates to generic_question.
 
-    params:
+    Parameters:
+    - question: Question body
     - expected_output - a list of pairs in the format:
         - ((inputs), expected_output)
         - Example: [
@@ -173,6 +174,8 @@ def no_input_question(question: str, solution: list[str]) -> widgets.Box:
     """
     Questions with no input. 
     Reveals solution on button click if solution exists.
+
+    Does not delegate to generic_question.
 
     Corresponds to the FaceIT question type: TEXT.
     """
