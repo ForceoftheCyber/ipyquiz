@@ -101,7 +101,6 @@ def display_questions(questions: list[Question], as_group=True):
     TODO: Document as_group
     """
     if as_group:
-        # TODO: Wrap in output! with output: display.
         display(question_group(questions))
     else:
         for question in questions:
@@ -114,14 +113,21 @@ def display_questions(questions: list[Question], as_group=True):
 
 def question_group(questions: list[Question]) -> widgets.Output:
     """
-    TODO: Update docs.
-    Makes a VBox of all the questions.
-    Has a separate field for output feedback for the whole group,
-    evaluated based on a cumulation of the evaluation functions of each question.
 
-    VBox
-    Button (submit)
-    Output
+    Makes a widget of all the questions, along with a submit button.
+
+    Upon submission, a separate field for output feedback for the whole group will be displayed.
+    The feedback is determined by the aggregate evaluation functions of each question.
+    Depending on whether the submission was approved or not, a "try again" button will appear, which rerenders the group with new questions.
+
+    Returns:
+        An Output widget containing the elements:
+
+        - VBox (questions)
+        - Button (submit)
+        - Output (text feedback)
+        - Button (try again)
+
     """
 
     # A group of questions is referred to as a 'quiz'. Could rename back to group if confusing.
