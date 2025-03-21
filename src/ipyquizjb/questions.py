@@ -1,13 +1,11 @@
-from typing import TypedDict, Literal, NotRequired
 import json
 import ipywidgets as widgets
 from IPython.display import display
 from collections.abc import Callable
 from typing import Any
 
-type EvaluationFunction = Callable[[], float | None]
-type FeedbackCallback = Callable[[], None]
-type QuestionWidgetPackage = tuple[widgets.Box, EvaluationFunction, FeedbackCallback]
+from ipyquizjb.types import QuestionWidgetPackage, Question, EvaluationFunction
+
 
 def multiple_choice(question: str,
                     options: list[Any],
@@ -112,7 +110,6 @@ def generic_question(question: str,
             output.outputs = [
                 {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
 
-
     layout = widgets.VBox([title_widget,
                            description_widget,
                            widgets.HBox([input_widget],
@@ -121,8 +118,6 @@ def generic_question(question: str,
                                         layout=widgets.Layout(margin="10px 10px 0px 0px"))])
 
     return layout, evaluation_function, feedback_callback
-
-
 
 
 def numeric_input(question: str, correct_answer: float) -> QuestionWidgetPackage:
@@ -225,14 +220,6 @@ def no_input_question(question: str, solution: list[str]) -> widgets.Box:
     return widgets.VBox([title_widget, button, solution_box])
 
 
-class Question(TypedDict):
-    type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
-    body: str
-    answers: NotRequired[list[str]]  # Options
-    answer: list[str] | str  # Correct answer
-    notes: NotRequired[list[str]]
-
-
 def make_question(question: Question) -> QuestionWidgetPackage:
     """
     Delegates to the other questions functions based on question type and returns a widget.
@@ -265,7 +252,8 @@ def make_question(question: Question) -> QuestionWidgetPackage:
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
 
-            always_correct = (lambda: True)  # Will always be considered a right solution (does not influence score computation)
+            # Will always be considered a right solution (does not influence score computation)
+            always_correct = (lambda: True)
             return no_input_question(question=question["body"], solution=solution_notes), always_correct, (lambda: None)
 
         case _:
@@ -290,6 +278,7 @@ def singleton_group(question: Question):
     button.on_click(_inner_check)
 
     return widgets.VBox([widget, button])
+
 
 def display_questions(questions: list[Question], as_group=True):
     """
@@ -318,7 +307,8 @@ def question_group(questions: list[Question]) -> widgets.Box:
     Output
     """
 
-    question_boxes, eval_functions, feedback_callbacks = zip(*(make_question(question) for question in questions))
+    question_boxes, eval_functions, feedback_callbacks = zip(
+        *(make_question(question) for question in questions))
 
     # for question in questions:
     #     widget_box, eval_func, feedback = make_question(question)
@@ -345,8 +335,9 @@ def question_group(questions: list[Question]) -> widgets.Box:
         with output:
             output.outputs = [
                 {'name': 'stdout', 'text': feedback(group_evaluation()), 'output_type': 'stream'}]
-            
-        for callback in feedback_callbacks: callback()
+
+        for callback in feedback_callbacks:
+            callback()
 
     button = widgets.Button(description="Check answer", icon="check",
                             style=dict(
@@ -355,7 +346,7 @@ def question_group(questions: list[Question]) -> widgets.Box:
     button.on_click(_inner_check)
 
     questions_box = widgets.VBox(question_boxes, layout=dict(
-        border = "solid"
+        border="solid"
     ))
 
     return widgets.VBox([questions_box, button, output])
