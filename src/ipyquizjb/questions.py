@@ -115,9 +115,10 @@ def question_group(questions: list[Question]) -> widgets.Box:
 
     def _inner_check(button):
         evaluation = group_evaluation()
+
         with output:
-            output.outputs = [
-                {'name': 'stdout', 'text': feedback(evaluation), 'output_type': 'stream'}]
+            # Print feedback to output
+            print(feedback(evaluation))
 
             # Sets border color based on evaluation
             output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
