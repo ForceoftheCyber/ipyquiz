@@ -188,7 +188,7 @@ def question_group(
 
         retry_btn = widgets.Button(
             description="Try again",
-            icon="check",
+            icon="refresh",
             style=dict(button_color="lightgreen"),
         )
         retry_btn.layout.display = "none"
