@@ -9,8 +9,7 @@ from ipyquizjb.types import QuestionWidgetPackage, Question, EvaluationFunction
 
 def multiple_choice(question: str,
                     options: list[Any],
-                    correct_option: Any,
-                    description: str = "") -> QuestionWidgetPackage:
+                    correct_option: Any) -> QuestionWidgetPackage:
     """
     Multiple-choice-single-answer type question.
 
@@ -30,8 +29,7 @@ def multiple_choice(question: str,
 
     return generic_question(question=question,
                             input_widget=options_widget,
-                            evaluation_function=eval_func,
-                            description=description)
+                            evaluation_function=eval_func)
 
 
 def multiple_answers(question: str,
@@ -50,7 +48,7 @@ def multiple_answers(question: str,
         if evaluation_result == None:
             return "Please pick an answer"
         elif evaluation_result == 0:
-            return "Correct answer"
+            return "Incorrect answer"
         else:
             return f"Correct answers: {evaluation_result}/{len(correct_answers)}"
 
@@ -84,7 +82,6 @@ def standard_feedback(evaluation_result: Any):
 def generic_question(question: str,
                      input_widget: widgets.Widget,
                      evaluation_function: EvaluationFunction,
-                     description: str = "",
                      feedback: Callable[[Any], str] = standard_feedback) -> QuestionWidgetPackage:
     """
     Abstract question function used by the other question types to display questions.
@@ -101,7 +98,6 @@ def generic_question(question: str,
     """
 
     title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
-    description_widget = widgets.HTMLMath(value=f"<p>{description}</p>")
 
     output = widgets.Output()
 
@@ -111,7 +107,6 @@ def generic_question(question: str,
                 {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
 
     layout = widgets.VBox([title_widget,
-                           description_widget,
                            widgets.HBox([input_widget],
                                         layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),
                            widgets.VBox([output],
