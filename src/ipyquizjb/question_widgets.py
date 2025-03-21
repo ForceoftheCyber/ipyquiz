@@ -39,6 +39,15 @@ def generic_question(question: str,
             output.outputs = [
                 {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
 
+            if (evaluation_function() == 0):
+                output.layout = {"border": "solid red 1em"}
+
+            elif (evaluation_function() == None):
+                output.layout = {"border": "Solid yellow 1em"}
+
+            else:
+                output.layout = {"border": "solid lightgreen 1em"}
+
     layout = widgets.VBox([title_widget,
                            widgets.HBox([input_widget],
                                         layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),

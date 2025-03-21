@@ -116,6 +116,11 @@ def question_group(questions: list[Question]) -> widgets.Box:
             output.outputs = [
                 {'name': 'stdout', 'text': feedback(group_evaluation()), 'output_type': 'stream'}]
 
+            if (group_evaluation() == len(questions)):
+                output.layout = {"border": "solid lightgreen 1em"}
+            else:
+                output.layout = {"border": "solid red 1em"}
+
         for callback in feedback_callbacks:
             callback()
 
