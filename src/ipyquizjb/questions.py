@@ -105,9 +105,10 @@ def question_group(questions: list[Question]) -> widgets.Box:
 
     def feedback(evaluation: float):
         if evaluation == 1:
-            return "All questions are correct!!"
-
-        return "Wrong!!"
+            return "All questions are correctly answered!"
+        elif evaluation == 0:
+            return "Wrong! No questions are correctly answered."
+        return "Partially correct! Some questions are correctly answered."
 
     output = widgets.Output()
     output.layout = {"padding": "0.25em", "margin": "0.2em"}
