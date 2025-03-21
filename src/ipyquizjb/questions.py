@@ -9,7 +9,8 @@ from ipyquizjb.question_widgets import multiple_choice, multiple_answers, no_inp
 
 def make_question(question: Question) -> QuestionWidgetPackage:
     """
-    Delegates to the other questions functions based on question type and returns a widget.
+    Makes a question.
+    Delegates to the other questions functions based on question type.
     """
     match question["type"]:
         case "MULTIPLE_CHOICE" if len(question["answer"]) == 1:
@@ -53,13 +54,10 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 def question_group(questions: list[Question]) -> widgets.Box:
     """
-    Makes a VBox of all the questions.
-    Has a separate field for output feedback for the whole group, 
+    Combines a list of questions in a group, returns a ipywidgets.Box
+    consisting of the individual questions boxes.
+    Has a separate output for output feedback for the whole group, 
     evaluated based on a cumulation of the evaluation functions of each question.
-
-    VBox
-    Button (submit)
-    Output
     """
 
     question_boxes, eval_functions, feedback_callbacks = zip(
@@ -69,7 +67,7 @@ def question_group(questions: list[Question]) -> widgets.Box:
         max_score = len(questions)
         group_sum = sum(func() if func() else 0 for func in eval_functions)
 
-        return group_sum / max_score  # Normalized
+        return group_sum / max_score  # Normalized to 0-1
 
     def feedback(evaluation: float):
         if evaluation == 1:
@@ -110,12 +108,16 @@ def question_group(questions: list[Question]) -> widgets.Box:
     return widgets.VBox([questions_box, button, output])
 
 
-def singleton_group(question: Question):
-    # Unpack to not be part of a group?
+def singleton_group(question: Question) -> widgets.Box:
+    """
+    Makes a question group with a single question,
+    including a button for evaluation the question. 
+    """
 
     widget, _, feedback_callback = make_question(question)
 
     if question["type"] == "TEXT":
+        # Nothing to check if the question has no input
         return widget
 
     button = widgets.Button(description="Check answer", icon="check",
@@ -131,21 +133,21 @@ def display_questions(questions: list[Question], as_group=True):
     """
     Displays a list of questions.
 
-    TODO: Document as_group
+    If as_group is true, it is displayed as a group with one "Check answer"-button,
+    otherwise, each question gets a button.
     """
     if as_group:
         display(question_group(questions))
     else:
         for question in questions:
-            # We are currently only interesting in displaying the question widget
-            # and do not care about the eval
             display(singleton_group(question))
-    # TODO
 
 
 def display_json(questions: str, as_group=True):
     """
-    Helper function for displaying based on the json-string from the FaceIT-format. 
+    Displays question based on the json-string from the FaceIT-format.
+
+    Delegates to display_questions. 
     """
 
     questions_dict = json.loads(questions)

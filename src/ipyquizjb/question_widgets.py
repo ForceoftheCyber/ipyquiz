@@ -15,6 +15,12 @@ def generic_question(question: str,
     The optional feedback function can be used to specify what feedback should
     be given based on the evaluation score.
 
+    It returns a tuple consisting of:
+    - A ipywidgets.Box of the interactive elements
+    - evaluation_function
+    - A callback function that will provide feedback 
+    to the question when called 
+
     Parameters:
     - question: Question body
     - input_widget: Widget used for getting user input
