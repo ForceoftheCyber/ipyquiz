@@ -47,42 +47,6 @@ def make_question(question: Question) -> QuestionWidgetPackage:
             raise NameError(f"{question['type']} is not a valid question type")
 
 
-def singleton_group(question: Question):
-    # Unpack to not be part of a group?
-
-    widget, _, callback = make_question(question)
-
-    if question["type"] == "TEXT":
-        return widget
-
-    def _inner_check(button):
-        callback()
-
-    button = widgets.Button(description="Check answer", icon="check",
-                            style=dict(
-                                button_color="lightgreen"
-                            ))
-    button.on_click(_inner_check)
-
-    return widgets.VBox([widget, button])
-
-
-def display_questions(questions: list[Question], as_group=True):
-    """
-    Displays a list of questions.
-
-    TODO: Document as_group
-    """
-    if as_group:
-        display(question_group(questions))
-    else:
-        for question in questions:
-            # We are currently only interesting in displaying the question widget
-            # and do not care about the eval
-            display(singleton_group(question))
-    # TODO
-
-
 def question_group(questions: list[Question]) -> widgets.Box:
     """
     Makes a VBox of all the questions.
@@ -137,6 +101,42 @@ def question_group(questions: list[Question]) -> widgets.Box:
     ))
 
     return widgets.VBox([questions_box, button, output])
+
+
+def singleton_group(question: Question):
+    # Unpack to not be part of a group?
+
+    widget, _, callback = make_question(question)
+
+    if question["type"] == "TEXT":
+        return widget
+
+    def _inner_check(button):
+        callback()
+
+    button = widgets.Button(description="Check answer", icon="check",
+                            style=dict(
+                                button_color="lightgreen"
+                            ))
+    button.on_click(_inner_check)
+
+    return widgets.VBox([widget, button])
+
+
+def display_questions(questions: list[Question], as_group=True):
+    """
+    Displays a list of questions.
+
+    TODO: Document as_group
+    """
+    if as_group:
+        display(question_group(questions))
+    else:
+        for question in questions:
+            # We are currently only interesting in displaying the question widget
+            # and do not care about the eval
+            display(singleton_group(question))
+    # TODO
 
 
 def display_json(questions: str, as_group=True):
