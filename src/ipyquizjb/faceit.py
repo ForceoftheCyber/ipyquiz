@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from ipyquizjb.questions import Question, display_json, display_questions
+from ipyquizjb.questions import display_questions
 
 API_BASE_URL = "https://dev.faceittools.com/questions/fetch_questions/"
 
