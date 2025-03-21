@@ -96,12 +96,6 @@ def question_group(questions: list[Question]) -> widgets.Box:
     question_boxes, eval_functions, feedback_callbacks = zip(
         *(make_question(question) for question in questions))
 
-    # for question in questions:
-    #     widget_box, eval_func, feedback = make_question(question)
-    #     question_boxes.append(widget_box)
-    #     eval_functions.append(eval_func)
-    #     feedback_callbacks.append(feedback)
-
     def group_evaluation():
         group_sum = 0
         for func in eval_functions:
