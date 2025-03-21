@@ -39,9 +39,13 @@ def make_question(question: Question) -> QuestionWidgetPackage:
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
 
-            # Will always be considered a right solution (does not influence score computation)
+            # Will always be considered a correct solution (does not influence score computation)
             always_correct = (lambda: True)
-            return no_input_question(question=question["body"], solution=solution_notes), always_correct, (lambda: None)
+
+            # Will not give feedback, as there is no input
+            no_feedback = (lambda: None)
+            
+            return no_input_question(question=question["body"], solution=solution_notes), always_correct, no_feedback
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
