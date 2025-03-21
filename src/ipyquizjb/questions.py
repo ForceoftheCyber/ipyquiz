@@ -113,7 +113,7 @@ def question_group(questions: list[Question]) -> widgets.Box:
     output = widgets.Output()
     output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
-    def _inner_check(button):
+    def feedback_evaluation(button):
         evaluation = group_evaluation()
 
         with output:
@@ -130,7 +130,7 @@ def question_group(questions: list[Question]) -> widgets.Box:
                             style=dict(
                                 button_color="lightgreen"
                             ))
-    button.on_click(_inner_check)
+    button.on_click(feedback_evaluation)
 
     questions_box = widgets.VBox(question_boxes, layout=dict(
         border="solid"
