@@ -101,6 +101,7 @@ def display_questions(questions: list[Question], as_group=True):
     TODO: Document as_group
     """
     if as_group:
+        # TODO: Wrap in output! with output: display.
         display(question_group(questions))
     else:
         for question in questions:
@@ -162,9 +163,20 @@ def question_group(questions: list[Question]) -> widgets.Output:
             for callback in feedback_callbacks:
                 callback()
 
+            if not is_approved:
+                retry_btn.layout.display = "block"
+
             
         # The text output.
         feedback_output = widgets.Output()
+
+        retry_btn = widgets.Button(
+            description="Try again",
+            icon="check",
+            style=dict(button_color="lightgreen"),
+        )
+        retry_btn.layout.display = "none"
+        retry_btn.on_click(lambda btn: render_quiz())
 
         check_btn = widgets.Button(
             description="Check answer",
@@ -175,7 +187,7 @@ def question_group(questions: list[Question]) -> widgets.Output:
 
         questions_box = widgets.VBox(question_boxes, layout=dict(border="solid"))
 
-        return widgets.VBox([questions_box, check_btn, feedback_output])
+        return widgets.VBox([questions_box, check_btn, feedback_output, retry_btn])
 
     render_quiz()
     return output
