@@ -23,14 +23,15 @@ def generic_question(question: str,
                      feedback: FeedbackFunction = standard_feedback) -> QuestionWidgetPackage:
     """
     Abstract question function used by the other question types to display questions.
-
-    Delegates to generic_question.
+    A question type function calls this function with a provided input_widget and
+    an evaluation_function that gives a score based on that input widget.
+    The optional feedback function can be used to specify what feedback should
+    be given based on the evaluation score.
 
     params:
     - question: Title of question
     - input_widget: Widget used for getting user input
     - evaluation_function: a function returning an evaluation of the answer provided based on the input widget
-    - description: Additional text to be provided with the question
     - feedback: A function giving textual feedback based on the result of the evaluation_function
 
     """
