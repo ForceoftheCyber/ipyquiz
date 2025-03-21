@@ -1,20 +1,7 @@
 import ipywidgets as widgets
 from typing import Any
 from ipyquizjb.types import QuestionWidgetPackage, EvaluationFunction, FeedbackFunction
-from ipyquizjb.utils import get_evaluation_color
-
-def standard_feedback(evaluation: float | None) -> str:
-    if evaluation == None:
-        return "No answer selected"
-    elif evaluation == 0:
-        return "Wrong answer!"
-    if evaluation == 1:
-        return "Correct!"
-    elif 0 < evaluation < 1:
-        return "Partially correct!"
-    else:
-        # Should not happen
-        return "Your score could not be correctly calculated"
+from ipyquizjb.utils import get_evaluation_color, standard_feedback
 
 
 def generic_question(question: str,
