@@ -110,19 +110,16 @@ def question_group(questions: list[Question]) -> widgets.Box:
 def singleton_group(question: Question):
     # Unpack to not be part of a group?
 
-    widget, _, callback = make_question(question)
+    widget, _, feedback_callback = make_question(question)
 
     if question["type"] == "TEXT":
         return widget
-
-    def _inner_check(button):
-        callback()
 
     button = widgets.Button(description="Check answer", icon="check",
                             style=dict(
                                 button_color="lightgreen"
                             ))
-    button.on_click(_inner_check)
+    button.on_click(lambda button: feedback_callback())
 
     return widgets.VBox([widget, button])
 
