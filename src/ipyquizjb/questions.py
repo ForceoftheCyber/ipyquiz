@@ -97,14 +97,13 @@ def question_group(questions: list[Question]) -> widgets.Box:
         *(make_question(question) for question in questions))
 
     def group_evaluation():
-        group_sum = 0
-        for func in eval_functions:
-            group_sum += func() if func() else 0
-        return group_sum
+        max_score = len(questions)
+        group_sum = sum(func() if func() else 0 for func in eval_functions)
+
+        return group_sum / max_score  # Normalized
 
     def feedback(evaluation: float):
-        max_score = len(questions)
-        if evaluation == max_score:
+        if evaluation == 1:
             return "All questions are correct!!"
 
         return "Wrong!!"
