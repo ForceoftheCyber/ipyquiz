@@ -60,14 +60,14 @@ def multiple_choice(question: str,
         style={"button_width": "auto"},
     )
 
-    def eval_func():
+    def evaluation_function():
         if options_widget.value is None:
             return None
         return float(options_widget.value == correct_option)
 
     return generic_question(question=question,
                             input_widget=options_widget,
-                            evaluation_function=eval_func)
+                            evaluation_function=evaluation_function)
 
 
 def multiple_answers(question: str,
@@ -90,7 +90,7 @@ def multiple_answers(question: str,
         else:
             return f"Correct answers: {evaluation_result}/{len(correct_answers)}"
 
-    def eval_func():
+    def evaluation_function():
         # Returns the proportion of correct answers.
 
         answers = set(
@@ -104,7 +104,7 @@ def multiple_answers(question: str,
 
     return generic_question(question=question,
                             input_widget=widgets.HBox(buttons),
-                            evaluation_function=eval_func,
+                            evaluation_function=evaluation_function,
                             feedback=feedback)
 
 
@@ -119,14 +119,14 @@ def numeric_input(question: str, correct_answer: float) -> QuestionWidgetPackage
         value=None,
     )
 
-    def eval_func():
+    def evaluation_function():
         if input_widget.value is None:
             return None
         return float(input_widget.value == correct_answer)
 
     return generic_question(question=question,
                             input_widget=input_widget,
-                            evaluation_function=eval_func)
+                            evaluation_function=evaluation_function)
 
 
 def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> QuestionWidgetPackage:
@@ -148,7 +148,7 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> Q
         description="What is the name of your function?", placeholder="myFunction",
         style=dict(description_width="initial"))
 
-    def eval_func():
+    def evaluation_function():
         function_name = input_widget.value
         if function_name not in globals():
             # Error handling
@@ -166,7 +166,7 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> Q
         else:
             return "Incorrect answer!"
 
-    return generic_question(question=question, input_widget=input_widget, evaluation_function=eval_func, feedback=feedback)
+    return generic_question(question=question, input_widget=input_widget, evaluation_function=evaluation_function, feedback=feedback)
 
 
 def no_input_question(question: str, solution: list[str]) -> widgets.Box:
