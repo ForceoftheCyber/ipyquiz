@@ -1,15 +1,7 @@
 import ipywidgets as widgets
 from typing import Any
 from ipyquizjb.types import QuestionWidgetPackage, EvaluationFunction, FeedbackFunction
-
-
-def standard_feedback(evaluation_result: Any):
-    if evaluation_result == None:
-        return "No answer selected"
-    elif evaluation_result == 0:
-        return "Wrong answer!"
-    else:
-        return "Correct!"
+from ipyquizjb.utils import get_evaluation_color, standard_feedback
 
 
 def generic_question(question: str,
@@ -18,28 +10,42 @@ def generic_question(question: str,
                      feedback: FeedbackFunction = standard_feedback) -> QuestionWidgetPackage:
     """
     Abstract question function used by the other question types to display questions.
+    A question type function calls this function with a provided input_widget and
+    an evaluation_function that gives a score based on that input widget.
+    The optional feedback function can be used to specify what feedback should
+    be given based on the evaluation score.
 
-    Delegates to generic_question.
+    It returns a tuple consisting of:
+    - A ipywidgets.Box of the interactive elements
+    - evaluation_function
+    - A callback function that will provide feedback 
+    to the question when called 
 
-    params:
-    - question: Title of question
+    Parameters:
+    - question: Question body
     - input_widget: Widget used for getting user input
     - evaluation_function: a function returning an evaluation of the answer provided based on the input widget
-    - description: Additional text to be provided with the question
     - feedback: A function giving textual feedback based on the result of the evaluation_function
-
     """
-
-    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    question_body_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
 
     output = widgets.Output()
+    output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
     def feedback_callback():
+        evaluation = evaluation_function()
+        
         with output:
-            output.outputs = [
-                {'name': 'stdout', 'text': feedback(evaluation_function()), 'output_type': 'stream'}]
+            # Clear output in case of successive calls
+            output.clear_output()
 
-    layout = widgets.VBox([title_widget,
+            # Print feedback to output
+            print(feedback(evaluation))
+
+            # Sets border color based on evaluation
+            output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
+
+    layout = widgets.VBox([question_body_widget,
                            widgets.HBox([input_widget],
                                         layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),
                            widgets.VBox([output],
@@ -63,14 +69,14 @@ def multiple_choice(question: str,
         style={"button_width": "auto"},
     )
 
-    def eval_func():
+    def evaluation_function():
         if options_widget.value is None:
             return None
         return float(options_widget.value == correct_option)
 
     return generic_question(question=question,
                             input_widget=options_widget,
-                            evaluation_function=eval_func)
+                            evaluation_function=evaluation_function)
 
 
 def multiple_answers(question: str,
@@ -93,7 +99,7 @@ def multiple_answers(question: str,
         else:
             return f"Correct answers: {evaluation_result}/{len(correct_answers)}"
 
-    def eval_func():
+    def evaluation_function():
         # Returns the proportion of correct answers.
 
         answers = set(
@@ -107,7 +113,7 @@ def multiple_answers(question: str,
 
     return generic_question(question=question,
                             input_widget=widgets.HBox(buttons),
-                            evaluation_function=eval_func,
+                            evaluation_function=evaluation_function,
                             feedback=feedback)
 
 
@@ -122,24 +128,25 @@ def numeric_input(question: str, correct_answer: float) -> QuestionWidgetPackage
         value=None,
     )
 
-    def eval_func():
+    def evaluation_function():
         if input_widget.value is None:
             return None
         return float(input_widget.value == correct_answer)
 
     return generic_question(question=question,
                             input_widget=input_widget,
-                            evaluation_function=eval_func)
+                            evaluation_function=evaluation_function)
 
 
 def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> QuestionWidgetPackage:
     """
-    Code question that uses a textbox for the user to write.
+    Code question that uses a textbox for the user to write the name of a function.
     The provided function is tested against the expected_outputs.
 
     Delegates to generic_question.
 
-    params:
+    Parameters:
+    - question: Question body
     - expected_output - a list of pairs in the format:
         - ((inputs), expected_output)
         - Example: [
@@ -151,7 +158,7 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> Q
         description="What is the name of your function?", placeholder="myFunction",
         style=dict(description_width="initial"))
 
-    def eval_func():
+    def evaluation_function():
         function_name = input_widget.value
         if function_name not in globals():
             # Error handling
@@ -169,13 +176,15 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> Q
         else:
             return "Incorrect answer!"
 
-    return generic_question(question=question, input_widget=input_widget, evaluation_function=eval_func, feedback=feedback)
+    return generic_question(question=question, input_widget=input_widget, evaluation_function=evaluation_function, feedback=feedback)
 
 
-def no_input_question(question: str, solution: list[str]) -> widgets.Box:
+def no_input_question(question: str, solution: list[str]) -> QuestionWidgetPackage:
     """
     Questions with no input. 
     Reveals solution on button click if solution exists.
+
+    Does not delegate to generic_question.
 
     Corresponds to the FaceIT question type: TEXT.
     """
@@ -208,4 +217,10 @@ def no_input_question(question: str, solution: list[str]) -> widgets.Box:
 
     button.on_click(reveal_solution)
 
-    return widgets.VBox([title_widget, button, solution_box])
+    # Will always be considered a correct solution (does not influence score computation)
+    always_correct = (lambda: True)
+
+    # Will not give feedback, as there is no input
+    no_feedback = (lambda: None)
+
+    return widgets.VBox([title_widget, button, solution_box]), always_correct, no_feedback

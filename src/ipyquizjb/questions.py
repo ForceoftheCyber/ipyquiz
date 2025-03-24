@@ -1,4 +1,5 @@
 import json
+from ipyquizjb.utils import get_evaluation_color
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 from collections.abc import Callable
@@ -13,14 +14,11 @@ from ipyquizjb.question_widgets import (
     numeric_input,
 )
 
-type EvaluationFunction = Callable[[], float | None]
-type FeedbackCallback = Callable[[], None]
-type QuestionWidgetPackage = tuple[widgets.Box, EvaluationFunction, FeedbackCallback]
-
 
 def make_question(question: Question) -> QuestionWidgetPackage:
     """
-    Delegates to the other questions functions based on question type and returns a widget.
+    Makes a question.
+    Delegates to the other questions functions based on question type.
     """
     match question["type"]:
         case "MULTIPLE_CHOICE" if len(question["answer"]) == 1:
@@ -63,69 +61,26 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
-
-            # Will always be considered a right solution (does not influence score computation)
-            always_correct = lambda: True
-            return (
-                no_input_question(question=question["body"], solution=solution_notes),
-                always_correct,
-                (lambda: None),
-            )
+            
+            return no_input_question(question=question["body"], solution=solution_notes)
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
-
-
-def singleton_group(question: Question):
-    # Unpack to not be part of a group?
-
-    widget, _, callback = make_question(question)
-
-    if question["type"] == "TEXT":
-        return widget
-
-    def _inner_check(button):
-        callback()
-
-    button = widgets.Button(
-        description="Check answer", icon="check", style=dict(button_color="lightgreen")
-    )
-    button.on_click(_inner_check)
-
-    return widgets.VBox([widget, button])
-
-
-def display_questions(questions: list[Question], as_group=True):
-    """
-    Displays a list of questions.
-
-    TODO: Document as_group
-    """
-    if as_group:
-        display(question_group(questions))
-    else:
-        for question in questions:
-            # We are currently only interesting in displaying the question widget
-            # and do not care about the eval
-            display(singleton_group(question))
-
-    # TODO
 
 
 def question_group(
     questions: list[Question], num_displayed: int = None
 ) -> widgets.Output:
     """
-
     Makes a widget of all the questions, along with a submit button.
-
-    Args:
-        questions (list[Question]):
-        num_displayed (int): The number of questions to be displayed at once.
 
     Upon submission, a separate field for output feedback for the whole group will be displayed.
     The feedback is determined by the aggregate evaluation functions of each question.
     Depending on whether the submission was approved or not, a "try again" button will appear, which rerenders the group with new questions.
+
+    Args:
+        questions (list[Question]):
+        num_displayed (int): The number of questions to be displayed at once.
 
     Returns:
         An Output widget containing the elements:
@@ -141,9 +96,9 @@ def question_group(
 
     # A group of questions is referred to as a 'quiz'. Could rename back to group if confusing.
 
-    output = widgets.Output()  # This the output for *this* group (or quiz).
+    output = widgets.Output()  # This the output containing the whole group
 
-    def render_quiz():
+    def render_group():
         with output:
             clear_output(wait=True)
 
@@ -151,67 +106,112 @@ def question_group(
             random.shuffle(questions)
             questions_displayed = questions[0:num_displayed]
 
-            display(build_quiz(questions_displayed))
+            display(build_group(questions_displayed))
 
-    def build_quiz(questions) -> widgets.Box:
-        # Unpack
+    def build_group(questions) -> widgets.Box:
+
         question_boxes, eval_functions, feedback_callbacks = zip(
-            *(make_question(question) for question in questions)
-        )
+        *(make_question(question) for question in questions))
 
-        def _inner_check(button):
-            # Rename this function to e.g. 'check_answers'?
+        def group_evaluation():
+            max_score = len(questions)
+            group_sum = sum(func() if func() else 0 for func in eval_functions)
 
-            def group_evaluation() -> float:
-                return sum(func() if func() else 0 for func in eval_functions)
+            return group_sum / max_score  # Normalized to 0-1
 
-            def approved(evaluation: float):
-                return len(questions) == evaluation
+        def feedback(evaluation: float):
+            if evaluation == 1:
+                return "All questions are correctly answered!"
+            elif evaluation == 0:
+                return "Wrong! No questions are correctly answered."
+            return "Partially correct! Some questions are correctly answered."
 
-            def feedback(approved: bool):
-                # Maybe have evaluation here as argument to have more fine-grained feedback messages.
-                return "All questions are correct!" if approved else "Wrong!"
+        feedback_output = widgets.Output()
+        feedback_output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
-            is_approved = approved(group_evaluation())
+        def feedback_callback(button):
+            evaluation = group_evaluation()
 
             with feedback_output:
-                print(feedback(is_approved))
+                # Clear output in case of successive calls
+                feedback_output.clear_output()
+
+                # Print feedback to output
+                print(feedback(evaluation))
+
+                # Sets border color based on evaluation
+                feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
             for callback in feedback_callbacks:
                 callback()
 
-            if not is_approved:
-                retry_btn.layout.display = "block"
+            if not group_evaluation() == 1:
+                retry_button.layout.display = "block"
 
-        # The text output.
-        feedback_output = widgets.Output()
+        check_button = widgets.Button(description="Check answer", icon="check",
+                                style=dict(
+                                    button_color="lightgreen"
+                                ))
+        check_button.on_click(feedback_callback)
 
-        retry_btn = widgets.Button(
+        retry_button = widgets.Button(
             description="Try again",
             icon="refresh",
-            style=dict(button_color="lightgreen"),
+            style=dict(button_color="orange"),
         )
-        retry_btn.layout.display = "none"
-        retry_btn.on_click(lambda btn: render_quiz())
+        retry_button.layout.display = "none"  # Start as hidden
+        retry_button.on_click(lambda btn: render_group())
 
-        check_btn = widgets.Button(
-            description="Check answer",
-            icon="check",
-            style=dict(button_color="lightgreen"),
-        )
-        check_btn.on_click(_inner_check)
+        questions_box = widgets.VBox(question_boxes, layout=dict(
+            border="solid"
+        ))
 
-        questions_box = widgets.VBox(question_boxes, layout=dict(border="solid"))
+        return widgets.VBox([questions_box, check_button, retry_button, feedback_output ])
 
-        return widgets.VBox([questions_box, check_btn, feedback_output, retry_btn])
-
-    render_quiz()
+    render_group()
     return output
+
+
+def singleton_group(question: Question) -> widgets.Box:
+    """
+    Makes a question group with a single question,
+    including a button for evaluation the question. 
+    """
+
+    widget, _, feedback_callback = make_question(question)
+
+    if question["type"] == "TEXT":
+        # Nothing to check if the question has no input
+        return widget
+
+    button = widgets.Button(description="Check answer", icon="check",
+                            style=dict(
+                                button_color="lightgreen"
+                            ))
+    button.on_click(lambda button: feedback_callback())
+
+    return widgets.VBox([widget, button])
+
+
+def display_questions(questions: list[Question], as_group=True):
+    """
+    Displays a list of questions.
+
+    If as_group is true, it is displayed as a group with one "Check answer"-button,
+    otherwise, each question gets a button.
+    """
+    if as_group:
+        display(question_group(questions))
+    else:
+        for question in questions:
+            display(singleton_group(question))
 
 
 def display_json(questions: str, as_group=True):
     """
-    Helper function for displaying based on the json-string from the FaceIT-format.
+    Displays question based on the json-string from the FaceIT-format.
+
+    Delegates to display_questions. 
     """
 
     questions_dict = json.loads(questions)
