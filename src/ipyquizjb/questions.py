@@ -69,7 +69,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], num_displayed: int = None
+    questions: list[Question], num_displayed: int | None = None
 ) -> widgets.Output:
     """
     Makes a widget of all the questions, along with a submit button.
