@@ -56,12 +56,13 @@ def make_question(question: Question) -> QuestionWidgetPackage:
                     "question['answer'] should not be a list when question type is multiple choice"
                 )
             return numeric_input(
-                question=question["body"], correct_answer=float(question["answer"])
+                question=question["body"], correct_answer=float(
+                    question["answer"])
             )
 
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
-            
+
             return no_input_question(question=question["body"], solution=solution_notes)
 
         case _:
@@ -92,9 +93,8 @@ def question_group(
 
     """
 
+    # Displays all questions if no other number provided.
     num_displayed = num_displayed or len(questions)
-
-    # A group of questions is referred to as a 'quiz'. Could rename back to group if confusing.
 
     output = widgets.Output()  # This the output containing the whole group
 
@@ -102,16 +102,15 @@ def question_group(
         with output:
             clear_output(wait=True)
 
-            # Suggestion:
+            # Randomizes questions
             random.shuffle(questions)
             questions_displayed = questions[0:num_displayed]
 
             display(build_group(questions_displayed))
 
     def build_group(questions) -> widgets.Box:
-
         question_boxes, eval_functions, feedback_callbacks = zip(
-        *(make_question(question) for question in questions))
+            *(make_question(question) for question in questions))
 
         def group_evaluation():
             max_score = len(questions)
@@ -149,9 +148,9 @@ def question_group(
                 retry_button.layout.display = "block"
 
         check_button = widgets.Button(description="Check answer", icon="check",
-                                style=dict(
-                                    button_color="lightgreen"
-                                ))
+                                      style=dict(
+                                          button_color="lightgreen"
+                                      ))
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
@@ -166,7 +165,7 @@ def question_group(
             border="solid"
         ))
 
-        return widgets.VBox([questions_box, check_button, retry_button, feedback_output ])
+        return widgets.VBox([questions_box, check_button, retry_button, feedback_output])
 
     render_group()
     return output
