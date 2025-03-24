@@ -154,18 +154,21 @@ def question_group(
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
-            description="Try again",
+            description="Try again with new questions",
             icon="refresh",
-            style=dict(button_color="orange"),
+            style=dict(
+                button_color="orange"
+            ),
+            layout=dict(width="auto")
         )
-        retry_button.layout.display = "none"  # Start as hidden
+        retry_button.layout.display = "none"  # Initially hidden
         retry_button.on_click(lambda btn: render_group())
 
         questions_box = widgets.VBox(question_boxes, layout=dict(
             border="solid"
         ))
 
-        return widgets.VBox([questions_box, check_button, retry_button, feedback_output])
+        return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
 
     render_group()
     return output
