@@ -1,4 +1,5 @@
 import json
+from ipyquizjb.utils import get_evaluation_color
 import ipywidgets as widgets
 from IPython.display import display
 
@@ -8,7 +9,8 @@ from ipyquizjb.question_widgets import multiple_choice, multiple_answers, no_inp
 
 def make_question(question: Question) -> QuestionWidgetPackage:
     """
-    Delegates to the other questions functions based on question type and returns a widget.
+    Makes a question.
+    Delegates to the other questions functions based on question type.
     """
     match question["type"]:
         case "MULTIPLE_CHOICE" if len(question["answer"]) == 1:
@@ -37,84 +39,52 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
-
-            # Will always be considered a right solution (does not influence score computation)
-            always_correct = (lambda: True)
-            return no_input_question(question=question["body"], solution=solution_notes), always_correct, (lambda: None)
+            
+            return no_input_question(question=question["body"], solution=solution_notes)
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
 
 
-def singleton_group(question: Question):
-    # Unpack to not be part of a group?
-
-    widget, _, callback = make_question(question)
-
-    if question["type"] == "TEXT":
-        return widget
-
-    def _inner_check(button):
-        callback()
-
-    button = widgets.Button(description="Check answer", icon="check",
-                            style=dict(
-                                button_color="lightgreen"
-                            ))
-    button.on_click(_inner_check)
-
-    return widgets.VBox([widget, button])
-
-
-def display_questions(questions: list[Question], as_group=True):
-    """
-    Displays a list of questions.
-
-    TODO: Document as_group
-    """
-    if as_group:
-        display(question_group(questions))
-    else:
-        for question in questions:
-            # We are currently only interesting in displaying the question widget
-            # and do not care about the eval
-            display(singleton_group(question))
-    # TODO
-
-
 def question_group(questions: list[Question]) -> widgets.Box:
     """
-    Makes a VBox of all the questions.
-    Has a separate field for output feedback for the whole group, 
+    Combines a list of questions in a group, returns a ipywidgets.Box
+    consisting of the individual questions boxes.
+    Has a separate output for output feedback for the whole group, 
     evaluated based on a cumulation of the evaluation functions of each question.
-
-    VBox
-    Button (submit)
-    Output
     """
 
     question_boxes, eval_functions, feedback_callbacks = zip(
         *(make_question(question) for question in questions))
 
     def group_evaluation():
-        group_sum = 0
-        for func in eval_functions:
-            group_sum += func() if func() else 0
-        return group_sum
+        max_score = len(questions)
+        group_sum = sum(func() if func() else 0 for func in eval_functions)
+
+        return group_sum / max_score  # Normalized to 0-1
 
     def feedback(evaluation: float):
-        max_score = len(questions)
-        if evaluation == max_score:
-            return "All questions are correct!!"
-
-        return "Wrong!!"
+        if evaluation == 1:
+            return "All questions are correctly answered!"
+        elif evaluation == 0:
+            return "Wrong! No questions are correctly answered."
+        return "Partially correct! Some questions are correctly answered."
 
     output = widgets.Output()
+    output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
-    def _inner_check(button):
+    def feedback_callback(button):
+        evaluation = group_evaluation()
+
         with output:
-            output.outputs = [
-                {'name': 'stdout', 'text': feedback(group_evaluation()), 'output_type': 'stream'}]
+            # Clear output in case of successive calls
+            output.clear_output()
+
+            # Print feedback to output
+            print(feedback(evaluation))
+
+            # Sets border color based on evaluation
+            output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
         for callback in feedback_callbacks:
             callback()
@@ -123,7 +93,7 @@ def question_group(questions: list[Question]) -> widgets.Box:
                             style=dict(
                                 button_color="lightgreen"
                             ))
-    button.on_click(_inner_check)
+    button.on_click(feedback_callback)
 
     questions_box = widgets.VBox(question_boxes, layout=dict(
         border="solid"
@@ -132,9 +102,46 @@ def question_group(questions: list[Question]) -> widgets.Box:
     return widgets.VBox([questions_box, button, output])
 
 
+def singleton_group(question: Question) -> widgets.Box:
+    """
+    Makes a question group with a single question,
+    including a button for evaluation the question. 
+    """
+
+    widget, _, feedback_callback = make_question(question)
+
+    if question["type"] == "TEXT":
+        # Nothing to check if the question has no input
+        return widget
+
+    button = widgets.Button(description="Check answer", icon="check",
+                            style=dict(
+                                button_color="lightgreen"
+                            ))
+    button.on_click(lambda button: feedback_callback())
+
+    return widgets.VBox([widget, button])
+
+
+def display_questions(questions: list[Question], as_group=True):
+    """
+    Displays a list of questions.
+
+    If as_group is true, it is displayed as a group with one "Check answer"-button,
+    otherwise, each question gets a button.
+    """
+    if as_group:
+        display(question_group(questions))
+    else:
+        for question in questions:
+            display(singleton_group(question))
+
+
 def display_json(questions: str, as_group=True):
     """
-    Helper function for displaying based on the json-string from the FaceIT-format. 
+    Displays question based on the json-string from the FaceIT-format.
+
+    Delegates to display_questions. 
     """
 
     questions_dict = json.loads(questions)
