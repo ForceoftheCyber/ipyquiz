@@ -188,6 +188,42 @@ def singleton_group(question: Question) -> widgets.Box:
                             style=dict(
                                 button_color="lightgreen"
                             ))
+
+    button.on_click(feedback_callback)
+
+    return widgets.VBox([widget, button])
+
+
+def display_questions(questions: list[Question], as_group=True):
+    """
+    Displays a list of questions.
+
+    If as_group is true, it is displayed as a group with one "Check answer"-button,
+    otherwise, each question gets a button.
+    """
+    if as_group:
+        display(question_group(questions))
+    else:
+        for question in questions:
+            display(singleton_group(question))
+
+
+def singleton_group(question: Question) -> widgets.Box:
+    """
+    Makes a question group with a single question,
+    including a button for evaluation the question. 
+    """
+
+    widget, _, feedback_callback = make_question(question)
+
+    if question["type"] == "TEXT":
+        # Nothing to check if the question has no input
+        return widget
+
+    button = widgets.Button(description="Check answer", icon="check",
+                            style=dict(
+                                button_color="lightgreen"
+                            ))
     button.on_click(lambda button: feedback_callback())
 
     return widgets.VBox([widget, button])
