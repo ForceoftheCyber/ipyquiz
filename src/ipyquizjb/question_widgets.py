@@ -179,7 +179,7 @@ def code_question(question: str, expected_outputs: list[tuple[tuple, Any]]) -> Q
     return generic_question(question=question, input_widget=input_widget, evaluation_function=evaluation_function, feedback=feedback)
 
 
-def no_input_question(question: str, solution: list[str]) -> widgets.Box:
+def no_input_question(question: str, solution: list[str]) -> QuestionWidgetPackage:
     """
     Questions with no input. 
     Reveals solution on button click if solution exists.
@@ -217,4 +217,10 @@ def no_input_question(question: str, solution: list[str]) -> widgets.Box:
 
     button.on_click(reveal_solution)
 
-    return widgets.VBox([title_widget, button, solution_box])
+    # Will always be considered a correct solution (does not influence score computation)
+    always_correct = (lambda: True)
+
+    # Will not give feedback, as there is no input
+    no_feedback = (lambda: None)
+
+    return widgets.VBox([title_widget, button, solution_box]), always_correct, no_feedback
