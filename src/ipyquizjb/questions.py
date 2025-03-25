@@ -113,17 +113,23 @@ def question_group(
             *(make_question(question) for question in questions))
 
         def group_evaluation():
+            if any(func() is None for func in eval_functions):
+                # Returns None if any of the eval_functions return None.
+                return None
+
             max_score = len(questions)
-            group_sum = sum(func() if func() else 0 for func in eval_functions)
+            group_sum = sum(func() for func in eval_functions)
 
             return group_sum / max_score  # Normalized to 0-1
 
-        def feedback(evaluation: float):
-            if evaluation == 1:
+        def feedback(evaluation: float | None):
+            if evaluation == None:
+                return "Some questions are not yet answered"
+            elif evaluation == 1:
                 return "All questions are correctly answered!"
             elif evaluation == 0:
-                return "Wrong! No questions are correctly answered."
-            return "Partially correct! Some questions are correctly answered."
+                return "Wrong! No questions are correctly answered"
+            return "Partially correct! Some questions are correctly answered"
 
         feedback_output = widgets.Output()
         feedback_output.layout = {"padding": "0.25em", "margin": "0.2em"}
@@ -141,16 +147,27 @@ def question_group(
                 # Sets border color based on evaluation
                 feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
+            if evaluation is None:
+                # If some questions are not answered, only give feedback about them
+                for i, eval_function in enumerate(eval_functions):
+                    if eval_function() is None:
+                        feedback_callbacks[i]()
+                return
+
             for callback in feedback_callbacks:
                 callback()
 
-            if not group_evaluation() == 1:
+            if evaluation != 1:
+                # Exchange check_button for retry_button if wrong answers
+                check_button.layout.display = "none"
                 retry_button.layout.display = "block"
+
 
         check_button = widgets.Button(description="Check answer", icon="check",
                                       style=dict(
                                           button_color="lightgreen"
-                                      ))
+                                      ),
+                                      layout=dict(width="auto"))
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
