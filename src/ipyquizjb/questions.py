@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Any
 import random
 
-from ipyquizjb.types import QuestionWidgetPackage, Question
+from ipyquizjb.types import QuestionWidgetPackage, Question, additional_material
 from ipyquizjb.question_widgets import (
     multiple_choice,
     multiple_answers,
@@ -70,7 +70,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], num_displayed: int | None = None
+    questions: list[Question], num_displayed: int | None = None, additional_material: additional_material | None = None
 ) -> widgets.Output:
     """
     Makes a widget of all the questions, along with a submit button.
@@ -94,6 +94,8 @@ def question_group(
     """
 
     # Displays all questions if no other number provided.
+    print(additional_material["body"])
+    print(additional_material["type"])
     num_displayed = num_displayed or len(questions)
 
     output = widgets.Output()  # This the output containing the whole group
@@ -142,9 +144,7 @@ def question_group(
                 feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
             if feedback(evaluation) != 1:
-                additional_material = questions["additional_material"]
-                print(additional_material["body"])
-
+                print(questions)
 
             for callback in feedback_callbacks:
                 callback()
@@ -200,15 +200,16 @@ def singleton_group(question: Question) -> widgets.Box:
     return widgets.VBox([widget, button])
 
 
-def display_questions(questions: list[Question], as_group=True):
+def display_questions(questions: list[Question], as_group=True, additional_material: additional_material | None = None):
     """
     Displays a list of questions.
 
     If as_group is true, it is displayed as a group with one "Check answer"-button,
     otherwise, each question gets a button.
     """
+
     if as_group:
-        display(question_group(questions))
+        display(question_group(questions, additional_material=additional_material))
     else:
         for question in questions:
             display(singleton_group(question))
@@ -222,5 +223,6 @@ def display_json(questions: str, as_group=True):
     """
 
     questions_dict = json.loads(questions)
-    
-    display_questions(questions_dict["questions"], as_group=as_group)
+
+    display_questions(questions_dict["questions"], as_group=as_group,
+                      additional_material=questions_dict["additional_material"])
