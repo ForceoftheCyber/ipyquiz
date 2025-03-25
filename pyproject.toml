@@ -11,7 +11,8 @@ authors = [
   { name="Jørgen Galdal", email="jorgen.4@live.no" },
   { name="Raviksan Navaratnarajah", email="raviksann@outlook.com" },
   { name="Synne Raad", email="synnera@live.com" },
-#   TODO: Add more authors
+  { name="Peter Vatnøy", email="peter.vatno02@gmail.com" },
+  { name="Eskild Sæther", email="gensereskild@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.12"
