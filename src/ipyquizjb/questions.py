@@ -1,7 +1,7 @@
 import json
 from ipyquizjb.utils import get_evaluation_color
 import ipywidgets as widgets
-from IPython.display import display, clear_output
+from IPython.display import display, clear_output, YouTubeVideo
 from collections.abc import Callable
 from typing import Any
 import random
@@ -141,6 +141,11 @@ def question_group(
                 # Sets border color based on evaluation
                 feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
+            if feedback(evaluation) != 1:
+                additional_material = questions["additional_material"]
+                print(additional_material["body"])
+
+
             for callback in feedback_callbacks:
                 callback()
 
@@ -217,5 +222,5 @@ def display_json(questions: str, as_group=True):
     """
 
     questions_dict = json.loads(questions)
-
+    
     display_questions(questions_dict["questions"], as_group=as_group)
