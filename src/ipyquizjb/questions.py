@@ -170,7 +170,6 @@ def question_group(
                                       layout=dict(width="auto"))
         check_button.on_click(feedback_callback)
 
-        # TODO: Fix slik at den hider retry hvis man får riktig.
         retry_button = widgets.Button(
             description="Try again with new questions",
             icon="refresh",
