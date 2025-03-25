@@ -1,13 +1,13 @@
 from collections.abc import Callable
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal, NotRequired, TypedDict, TypeAlias
 
 import ipywidgets as widgets
 
-type EvaluationFunction = Callable[[], float | None]
-type FeedbackCallback = Callable[[], None]
-type QuestionWidgetPackage = tuple[widgets.Box,
+EvaluationFunction: TypeAlias = Callable[[], float | None]
+FeedbackCallback: TypeAlias = Callable[[], None]
+QuestionWidgetPackage: TypeAlias  = tuple[widgets.Box,
                                    EvaluationFunction, FeedbackCallback]
-type FeedbackFunction = Callable[[float | None], str]
+FeedbackFunction: TypeAlias = Callable[[float | None], str]
 
 
 class Question(TypedDict):
