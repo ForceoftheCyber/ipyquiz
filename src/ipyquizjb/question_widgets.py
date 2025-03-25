@@ -1,7 +1,7 @@
 import ipywidgets as widgets
 from typing import Any
 from ipyquizjb.types import QuestionWidgetPackage, EvaluationFunction, FeedbackFunction
-from ipyquizjb.utils import get_evaluation_color, standard_feedback
+from ipyquizjb.utils import get_evaluation_color, standard_feedback, disable_input
 
 
 def generic_question(question: str,
@@ -44,6 +44,10 @@ def generic_question(question: str,
 
             # Sets border color based on evaluation
             output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
+
+        if evaluation is not None and evaluation != 1:
+            # Only disable on wrong input, not when not answered
+            disable_input(input_widget)
 
     layout = widgets.VBox([question_body_widget,
                            widgets.HBox([input_widget],
