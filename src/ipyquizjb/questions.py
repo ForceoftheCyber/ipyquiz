@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Any
 import random
 
-from ipyquizjb.types import QuestionWidgetPackage, Question, additional_material
+from ipyquizjb.types import QuestionWidgetPackage, Question, AdditionalMaterial
 from ipyquizjb.question_widgets import (
     multiple_choice,
     multiple_answers,
@@ -70,7 +70,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], num_displayed: int | None = None, additional_material: additional_material | None = None
+    questions: list[Question], num_displayed: int | None = None, additional_material: AdditionalMaterial | None = None
 ) -> widgets.Output:
     """
     Makes a widget of all the questions, along with a submit button.
@@ -94,8 +94,6 @@ def question_group(
     """
 
     # Displays all questions if no other number provided.
-    print(additional_material["body"])
-    print(additional_material["type"])
     num_displayed = num_displayed or len(questions)
 
     output = widgets.Output()  # This the output containing the whole group
@@ -128,7 +126,9 @@ def question_group(
             return "Partially correct! Some questions are correctly answered."
 
         feedback_output = widgets.Output()
+        material_output = widgets.Output()
         feedback_output.layout = {"padding": "0.25em", "margin": "0.2em"}
+        material_output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
         def feedback_callback(button):
             evaluation = group_evaluation()
@@ -143,9 +143,18 @@ def question_group(
                 # Sets border color based on evaluation
                 feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
-            if feedback(evaluation) != 1:
-                print(questions)
-
+            if evaluation != 1:
+                with material_output:
+                    body = additional_material["body"]
+                    # Clear output in case of successive calls
+                    match additional_material["type"]: 
+                        case "TEXT":
+                            display(widgets.HTML(body))
+                        case "VIDEO":
+                            display(YouTubeVideo(body))
+                        case "CODE":
+                            display(widgets.HTML(body))
+     
             for callback in feedback_callbacks:
                 callback()
 
@@ -173,7 +182,7 @@ def question_group(
             border="solid"
         ))
 
-        return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
+        return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output, material_output])
 
     render_group()
     return output
@@ -200,7 +209,7 @@ def singleton_group(question: Question) -> widgets.Box:
     return widgets.VBox([widget, button])
 
 
-def display_questions(questions: list[Question], as_group=True, additional_material: additional_material | None = None):
+def display_questions(questions: list[Question], as_group=True, additional_material: AdditionalMaterial | None = None):
     """
     Displays a list of questions.
 

@@ -8,7 +8,7 @@ type QuestionWidgetPackage = tuple[widgets.Box,
                                    EvaluationFunction, FeedbackCallback]
 type FeedbackFunction = Callable[[Any], str]
 
-class additional_material(TypedDict):
+class AdditionalMaterial(TypedDict):
     type: NotRequired[Literal["TEXT", "VIDEO", "CODE"]]
     body: str
 
@@ -18,4 +18,3 @@ class Question(TypedDict):
     answers: NotRequired[list[str]]  # Options
     answer: list[str] | str  # Correct answer
     notes: NotRequired[list[str]]
-    additional_material: NotRequired[additional_material] # Additional material for students to revise
