@@ -219,7 +219,10 @@ def display_questions(questions: list[Question], as_group=True):
     If as_group is true, it is displayed as a group with one "Check answer"-button,
     otherwise, each question gets a button.
     """
-    if as_group:
+    # If only text questions: no reason to group, and add no check-answer-button
+    only_text_questions = all(question["type"] == "TEXT" for question in questions)
+
+    if as_group and not only_text_questions:
         display(question_group(questions))
     else:
         for question in questions:
