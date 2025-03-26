@@ -14,5 +14,5 @@ class Question(TypedDict):
     type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
     body: str
     answers: NotRequired[list[str]]  # Options
-    answer: list[str] | str  # Correct answer
+    answer: NotRequired[list[str] | str]  # Correct answer
     notes: NotRequired[list[str]]
