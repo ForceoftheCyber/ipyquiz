@@ -97,19 +97,21 @@ def question_group(
     num_displayed = num_displayed or len(questions)
 
     output = widgets.Output()  # This the output containing the whole group
+    material_output = widgets.Output()
 
     def render_additional_material():
-        body = additional_material["body"]
-        match additional_material["type"]: 
-            case "TEXT":
-                return widgets.HTML(body)
-            case "VIDEO":
-                return YouTubeVideo(body)
-            case "CODE":
-               return widgets.HTML(body)
-    
-    material_widget = render_additional_material()
-    material_widget.layout.display = "none"
+        with material_output:
+            body = additional_material["body"]
+            match additional_material["type"]: 
+                case "TEXT":
+                    display(widgets.HTML(body))
+                case "VIDEO":
+                    display(YouTubeVideo(body))
+                case "CODE":
+                    display(widgets.HTML(body))
+
+    render_additional_material()
+    material_output.layout.display = "none"
 
     def render_group():
         with output:
@@ -156,7 +158,7 @@ def question_group(
 
 
             if evaluation != 1:
-                material_widget.layout.display = "block"
+                material_output.layout.display = "block"
 
             for callback in feedback_callbacks:
                 callback()
@@ -188,7 +190,7 @@ def question_group(
         return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
 
     render_group()
-    return widgets.VBox([output, material_widget])
+    return widgets.VBox([output, material_output])
 
 def singleton_group(question: Question) -> widgets.Box:
     """
