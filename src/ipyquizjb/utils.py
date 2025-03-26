@@ -42,6 +42,11 @@ def disable_input(input_widget: widgets.Box | widgets.Widget):
         # Not all widgets can be disabled, only disable those that can be
         input_widget.disabled = True  # type: ignore
 
+def question_title(question: str) -> widgets.Widget:
+    """
+    Returns a widget for question title with some styling
+    """
+    return widgets.HTMLMath(value=f"<h2 style='font-size: 1.25em;'>{question}</h2>")
 
 def display_message_on_error(message: str = "Could not display questions."):
     """
