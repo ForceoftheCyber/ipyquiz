@@ -1,10 +1,9 @@
 import json
-from ipyquizjb.utils import get_evaluation_color
+from ipyquizjb.utils import get_evaluation_color, display_message_on_error
 import ipywidgets as widgets
 from IPython.display import display, clear_output
-from collections.abc import Callable
-from typing import Any
 import random
+
 
 from ipyquizjb.types import QuestionWidgetPackage, Question
 from ipyquizjb.question_widgets import (
@@ -213,7 +212,7 @@ def singleton_group(question: Question) -> widgets.Box:
 
     return widgets.VBox([widget, button])
 
-
+@display_message_on_error()
 def display_questions(questions: list[Question], as_group=True):
     """
     Displays a list of questions.
@@ -230,7 +229,7 @@ def display_questions(questions: list[Question], as_group=True):
         for question in questions:
             display(singleton_group(question))
 
-
+@display_message_on_error()
 def display_json(questions: str, as_group=True):
     """
     Displays question based on the json-string from the FaceIT-format.
