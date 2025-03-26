@@ -3,9 +3,11 @@ import json
 import requests
 
 from ipyquizjb.questions import display_questions
+from ipyquizjb.utils import display_message_on_error
 
 API_BASE_URL = "https://dev.faceittools.com/questions/fetch_questions/"
 
+@display_message_on_error("Failed to fetch questions from the question provider server.")
 def display_simple_search(body: str, max_questions: int = 10):
     """
     Fetches questions from FaceIT and displays them as a group.
@@ -17,7 +19,7 @@ def display_simple_search(body: str, max_questions: int = 10):
     response = requests.get(f"{API_BASE_URL}{body}")
 
     if response.status_code == 204:
-        return []
+        return
     elif response.status_code == 200:
         content = response.json()
         
@@ -30,9 +32,8 @@ def display_simple_search(body: str, max_questions: int = 10):
 
         display_questions(questions=questions)       
     else:
-        # TODO: Error handling in cell
         raise requests.exceptions.RequestException(f"Fetch resulted in a HTTP error with status code: {response.status_code}")
     
-# # For debugging
-# if __name__ == "__main__":
-#     display_simple_search("math")
+# For debugging
+if __name__ == "__main__":
+    display_simple_search("math")

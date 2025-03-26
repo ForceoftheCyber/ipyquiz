@@ -8,6 +8,7 @@ FeedbackCallback: TypeAlias = Callable[[], None]
 QuestionWidgetPackage: TypeAlias  = tuple[widgets.Box,
                                    EvaluationFunction, FeedbackCallback]
 FeedbackFunction: TypeAlias = Callable[[float | None], str]
+DisplayFunction: TypeAlias = Callable[..., None]
 
 
 class Question(TypedDict):

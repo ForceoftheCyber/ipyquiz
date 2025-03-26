@@ -1,4 +1,6 @@
 import ipywidgets as widgets
+from ipyquizjb.types import DisplayFunction
+from IPython.display import display
 
 def get_evaluation_color(evaluation: float | None) -> str:
     """
@@ -39,3 +41,24 @@ def disable_input(input_widget: widgets.Box | widgets.Widget):
     elif isinstance(input_widget, widgets.Widget) and hasattr(input_widget,"disabled"):
         # Not all widgets can be disabled, only disable those that can be
         input_widget.disabled = True  # type: ignore
+
+
+def display_message_on_error(message: str = "Could not display questions."):
+    """
+    Can be used as a decorator for display functions.
+    This will display a error message in case of an exception being thrown.
+
+    Usage:
+        put "@display_message_on_error()"
+        on the line above the display function definition,
+        and optionally provide a custom error message.
+    """
+    def decorator(faceit_display_function: DisplayFunction):
+        def wrapper(*args, **kwargs):
+            try:
+                faceit_display_function(*args, **kwargs)
+            except Exception:
+                # Catches all exceptions
+                display(widgets.HTML(f"<p style='font-size: 2em; font-weight: bold; font-style: italic; background-color: lightcoral; padding: 1em'>An error occurred: {message}</p>"))
+        return wrapper
+    return decorator
