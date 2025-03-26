@@ -53,10 +53,10 @@ def display_message_on_error(message: str = "Could not display questions."):
         on the line above the display function definition,
         and optionally provide a custom error message.
     """
-    def decorator(faceit_display_function: DisplayFunction):
+    def decorator(display_function: DisplayFunction):
         def wrapper(*args, **kwargs):
             try:
-                faceit_display_function(*args, **kwargs)
+                display_function(*args, **kwargs)
             except Exception:
                 # Catches all exceptions
                 display(widgets.HTML(f"<p style='font-size: 2em; font-weight: bold; font-style: italic; background-color: lightcoral; padding: 1em'>An error occurred: {message}</p>"))
