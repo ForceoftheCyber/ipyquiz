@@ -184,7 +184,7 @@ def question_group(
         retry_button.on_click(lambda btn: render_group())
 
         questions_box = widgets.VBox(question_boxes, layout=dict(
-            border="solid"
+            padding="1em"
         ))
 
         return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
