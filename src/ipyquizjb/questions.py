@@ -71,7 +71,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 def question_group(
     questions: list[Question], num_displayed: int | None = None, additional_material: AdditionalMaterial | None = None
-) -> widgets.Output:
+) -> widgets.Box:
     """
     Makes a widget of all the questions, along with a submit button.
 
@@ -97,6 +97,19 @@ def question_group(
     num_displayed = num_displayed or len(questions)
 
     output = widgets.Output()  # This the output containing the whole group
+
+    def render_additional_material():
+        body = additional_material["body"]
+        match additional_material["type"]: 
+            case "TEXT":
+                return widgets.HTML(body)
+            case "VIDEO":
+                return YouTubeVideo(body)
+            case "CODE":
+               return widgets.HTML(body)
+    
+    material_widget = render_additional_material()
+    material_widget.layout.display = "none"
 
     def render_group():
         with output:
@@ -126,9 +139,7 @@ def question_group(
             return "Partially correct! Some questions are correctly answered."
 
         feedback_output = widgets.Output()
-        material_output = widgets.Output()
         feedback_output.layout = {"padding": "0.25em", "margin": "0.2em"}
-        material_output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
         def feedback_callback(button):
             evaluation = group_evaluation()
@@ -143,18 +154,10 @@ def question_group(
                 # Sets border color based on evaluation
                 feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
+
             if evaluation != 1:
-                with material_output:
-                    body = additional_material["body"]
-                    # Clear output in case of successive calls
-                    match additional_material["type"]: 
-                        case "TEXT":
-                            display(widgets.HTML(body))
-                        case "VIDEO":
-                            display(YouTubeVideo(body))
-                        case "CODE":
-                            display(widgets.HTML(body))
-     
+                material_widget.layout.display = "block"
+
             for callback in feedback_callbacks:
                 callback()
 
@@ -182,11 +185,10 @@ def question_group(
             border="solid"
         ))
 
-        return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output, material_output])
+        return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
 
     render_group()
-    return output
-
+    return widgets.VBox([output, material_widget])
 
 def singleton_group(question: Question) -> widgets.Box:
     """
