@@ -21,7 +21,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
     Delegates to the other questions functions based on question type.
     """
     match question["type"]:
-        case "MULTIPLE_CHOICE" if len(question["answer"]) == 1:
+        case "MULTIPLE_CHOICE" if "answer" in question and len(question["answer"]) == 1:
             # Multiple choice, single answer
             # TODO: Add validation of format?
             if "answers" not in question or not question["answers"]:
@@ -35,6 +35,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
             )
 
         case "MULTIPLE_CHOICE":
+            assert "answer" in question
             # Multiple choice, multiple answer
             if isinstance(question["answer"], str):
                 raise TypeError(
@@ -51,6 +52,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
             )
 
         case "NUMERIC":
+            assert "answer" in question
             if isinstance(question["answer"], list):
                 raise TypeError(
                     "question['answer'] should not be a list when question type is multiple choice"
