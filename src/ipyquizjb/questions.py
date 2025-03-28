@@ -71,7 +71,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], num_displayed: int | None = None
+    questions: list[Question]
 ) -> widgets.Output:
     """
     Makes a widget of all the questions, along with a submit button.
@@ -93,19 +93,39 @@ def question_group(
         - Button (try again)
 
     """
+    # Splits questions into the initials and the retry pool
+    initial_questions = []
+    retry_questions = []
+    for question in questions:
+        # Will default to initial, if not provided
+        if "when" not in question or question["when"] == "initial":
+            initial_questions.append(question)
+        elif question["when"] == "retry":
+            retry_questions.append(question)
+    if len(retry_questions) == 0:
+        # Use same questions for retry if there are no designated
+        # retry questions.
+        retry_questions = initial_questions
 
-    # Displays all questions if no other number provided.
-    num_displayed = num_displayed or len(questions)
+    # Will use the same number of questions for retry_pool
+    num_displayed = len(initial_questions)
 
     output = widgets.Output()  # This the output containing the whole group
 
-    def render_group():
+    def render_group(first_render: bool):
+        """
+        first_render is True if inital_questions should be display,
+        False if they should be taken from the retry pool.
+        """
         with output:
             clear_output(wait=True)
 
-            # Randomizes questions
-            random.shuffle(questions)
-            questions_displayed = questions[0:num_displayed]
+            if first_render:
+                questions_displayed = initial_questions
+            else:
+                # Randomizes questions
+                random.shuffle(retry_questions)
+                questions_displayed = retry_questions[0:num_displayed]
 
             display(build_group(questions_displayed))
 
@@ -180,7 +200,7 @@ def question_group(
             layout=dict(width="auto")
         )
         retry_button.layout.display = "none"  # Initially hidden
-        retry_button.on_click(lambda btn: render_group())
+        retry_button.on_click(lambda btn: render_group(False))
 
         questions_box = widgets.VBox(question_boxes, layout=dict(
             padding="1em"
@@ -188,7 +208,7 @@ def question_group(
 
         return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
 
-    render_group()
+    render_group(True)
     return output
 
 

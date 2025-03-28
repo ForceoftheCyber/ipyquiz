@@ -12,8 +12,16 @@ DisplayFunction: TypeAlias = Callable[..., None]
 
 
 class Question(TypedDict):
+    """
+    The typing of a dictionary representing a single question.
+    
+    when: When the question should be shown.
+        - "initial": when a question group is first displayed
+        - "retry": in the pool of questions to use after retrying
+    """
     type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
     body: str
     answers: NotRequired[list[str]]  # Options
     answer: NotRequired[list[str] | str]  # Correct answer
     notes: NotRequired[list[str]]
+    when: NotRequired[Literal["initial", "retry"]]
