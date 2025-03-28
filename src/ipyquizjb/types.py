@@ -10,6 +10,9 @@ QuestionWidgetPackage: TypeAlias  = tuple[widgets.Box,
 FeedbackFunction: TypeAlias = Callable[[float | None], str]
 DisplayFunction: TypeAlias = Callable[..., None]
 
+class AdditionalMaterial(TypedDict):
+    type: NotRequired[Literal["TEXT", "VIDEO", "CODE"]]
+    body: str
 
 class Question(TypedDict):
     """
