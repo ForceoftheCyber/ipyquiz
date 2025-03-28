@@ -1,8 +1,10 @@
 import json
 from ipyquizjb.utils import get_evaluation_color, display_message_on_error
+from ipyquizjb.utils import get_evaluation_color, display_message_on_error
 import ipywidgets as widgets
 from IPython.display import display, clear_output, YouTubeVideo
 import random
+
 
 
 from ipyquizjb.types import QuestionWidgetPackage, Question, AdditionalMaterial
