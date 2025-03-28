@@ -1,4 +1,5 @@
 ipykernel
+pytest-ipywidgets[all]
 
 # Use only one of these lines to install this package
 # Use this line if you want to install from github repo:
