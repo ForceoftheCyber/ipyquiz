@@ -1,6 +1,6 @@
 [project]
 name = "ipyquizjb"
-version = "0.2.9"
+version = "0.3.4"
 description = "Quizzes for Jupyter"
 dependencies = [
     "ipython",
@@ -11,10 +11,11 @@ authors = [
   { name="Jørgen Galdal", email="jorgen.4@live.no" },
   { name="Raviksan Navaratnarajah", email="raviksann@outlook.com" },
   { name="Synne Raad", email="synnera@live.com" },
-#   TODO: Add more authors
+  { name="Peter Vatnøy", email="peter.vatno02@gmail.com" },
+  { name="Eskild Sæther", email="gensereskild@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

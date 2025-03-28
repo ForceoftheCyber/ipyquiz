@@ -1,12 +1,12 @@
 import json
-from ipyquizjb.utils import get_evaluation_color
+from ipyquizjb.utils import get_evaluation_color, display_message_on_error
 import ipywidgets as widgets
 from IPython.display import display, clear_output, YouTubeVideo
-from collections.abc import Callable
-from typing import Any
 import random
 
+
 from ipyquizjb.types import QuestionWidgetPackage, Question, AdditionalMaterial
+
 from ipyquizjb.question_widgets import (
     multiple_choice,
     multiple_answers,
@@ -21,7 +21,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
     Delegates to the other questions functions based on question type.
     """
     match question["type"]:
-        case "MULTIPLE_CHOICE" if len(question["answer"]) == 1:
+        case "MULTIPLE_CHOICE" if "answer" in question and len(question["answer"]) == 1:
             # Multiple choice, single answer
             # TODO: Add validation of format?
             if "answers" not in question or not question["answers"]:
@@ -35,6 +35,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
             )
 
         case "MULTIPLE_CHOICE":
+            assert "answer" in question
             # Multiple choice, multiple answer
             if isinstance(question["answer"], str):
                 raise TypeError(
@@ -51,6 +52,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
             )
 
         case "NUMERIC":
+            assert "answer" in question
             if isinstance(question["answer"], list):
                 raise TypeError(
                     "question['answer'] should not be a list when question type is multiple choice"
@@ -92,36 +94,58 @@ def question_group(
         - Button (try again)
 
     """
+    # Splits questions into the initials and the retry pool
+    initial_questions = []
+    retry_questions = []
+    for question in questions:
+        # Will default to initial, if not provided
+        if "when" not in question or question["when"] == "initial":
+            initial_questions.append(question)
+        elif question["when"] == "retry":
+            retry_questions.append(question)
+    if len(retry_questions) == 0:
+        # Use same questions for retry if there are no designated
+        # retry questions.
+        retry_questions = initial_questions
 
-    # Displays all questions if no other number provided.
-    num_displayed = num_displayed or len(questions)
+    # Will use the same number of questions for retry_pool
+    num_displayed = len(initial_questions)
 
     output = widgets.Output()  # This the output containing the whole group
     material_output = widgets.Output()
 
-    def render_additional_material():
-        with material_output:
-            body = additional_material["body"]
-            match additional_material["type"]: 
-                case "TEXT":
-                    #Styled to h3, because p tag doesn't work
-                    styled_text = "<h3 style = \"font-size: 1em;\">" + body + "</h3>"
-                    display(widgets.HTML(styled_text))
-                case "VIDEO":
-                    display(YouTubeVideo(body))
-                case "CODE":
-                    display(widgets.HTML(body))
 
-    render_additional_material()
-    material_output.layout.display = "none"
+    if(additional_material!=None):
+        def render_additional_material():
+            with material_output:
+                body = additional_material["body"]
+                match additional_material["type"]: 
+                    case "TEXT":
+                        #Styled to h3, because p tag doesn't work
+                        styled_text = "<h3 style = \"font-size: 1em;\">" + body + "</h3>"
+                        display(widgets.HTML(styled_text))
+                    case "VIDEO":
+                        display(YouTubeVideo(body))
+                    case "CODE":
+                        display(widgets.HTML(body))
 
-    def render_group():
+        render_additional_material()
+        material_output.layout.display = "none"
+
+    def render_group(first_render: bool):
+        """
+        first_render is True if inital_questions should be display,
+        False if they should be taken from the retry pool.
+        """
         with output:
             clear_output(wait=True)
 
-            # Randomizes questions
-            random.shuffle(questions)
-            questions_displayed = questions[0:num_displayed]
+            if first_render:
+                questions_displayed = initial_questions
+            else:
+                # Randomizes questions
+                random.shuffle(retry_questions)
+                questions_displayed = retry_questions[0:num_displayed]
 
             display(build_group(questions_displayed))
 
@@ -130,17 +154,23 @@ def question_group(
             *(make_question(question) for question in questions))
 
         def group_evaluation():
+            if any(func() is None for func in eval_functions):
+                # Returns None if any of the eval_functions return None.
+                return None
+
             max_score = len(questions)
-            group_sum = sum(func() if func() else 0 for func in eval_functions)
+            group_sum = sum(func() for func in eval_functions)
 
             return group_sum / max_score  # Normalized to 0-1
 
-        def feedback(evaluation: float):
-            if evaluation == 1:
+        def feedback(evaluation: float | None):
+            if evaluation == None:
+                return "Some questions are not yet answered"
+            elif evaluation == 1:
                 return "All questions are correctly answered!"
             elif evaluation == 0:
-                return "Wrong! No questions are correctly answered."
-            return "Partially correct! Some questions are correctly answered."
+                return "Wrong! No questions are correctly answered"
+            return "Partially correct! Some questions are correctly answered"
 
         feedback_output = widgets.Output()
         feedback_output.layout = {"padding": "0.25em", "margin": "0.2em"}
@@ -162,16 +192,27 @@ def question_group(
             if evaluation != 1:
                 material_output.layout.display = "block"
 
+            if evaluation is None:
+                # If some questions are not answered, only give feedback about them
+                for i, eval_function in enumerate(eval_functions):
+                    if eval_function() is None:
+                        feedback_callbacks[i]()
+                return
+
             for callback in feedback_callbacks:
                 callback()
 
-            if not group_evaluation() == 1:
+            if evaluation != 1:
+                # Exchange check_button for retry_button if wrong answers
+                check_button.layout.display = "none"
                 retry_button.layout.display = "block"
+
 
         check_button = widgets.Button(description="Check answer", icon="check",
                                       style=dict(
                                           button_color="lightgreen"
-                                      ))
+                                      ),
+                                      layout=dict(width="auto"))
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
@@ -183,15 +224,15 @@ def question_group(
             layout=dict(width="auto")
         )
         retry_button.layout.display = "none"  # Initially hidden
-        retry_button.on_click(lambda btn: render_group())
+        retry_button.on_click(lambda btn: render_group(False))
 
         questions_box = widgets.VBox(question_boxes, layout=dict(
-            border="solid"
+            padding="1em"
         ))
 
         return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
 
-    render_group()
+    render_group(True)
     return widgets.VBox([output, material_output])
 
 def singleton_group(question: Question) -> widgets.Box:
@@ -214,7 +255,7 @@ def singleton_group(question: Question) -> widgets.Box:
 
     return widgets.VBox([widget, button])
 
-
+@display_message_on_error()
 def display_questions(questions: list[Question], as_group=True, additional_material: AdditionalMaterial | None = None):
     """
     Displays a list of questions.
@@ -222,14 +263,17 @@ def display_questions(questions: list[Question], as_group=True, additional_mater
     If as_group is true, it is displayed as a group with one "Check answer"-button,
     otherwise, each question gets a button.
     """
+    # If only text questions: no reason to group, and add no check-answer-button
+    only_text_questions = all(question["type"] == "TEXT" for question in questions)
 
-    if as_group:
+
+    if as_group and not only_text_questions:
         display(question_group(questions, additional_material=additional_material))
     else:
         for question in questions:
             display(singleton_group(question))
 
-
+@display_message_on_error()
 def display_json(questions: str, as_group=True):
     """
     Displays question based on the json-string from the FaceIT-format.
@@ -239,5 +283,10 @@ def display_json(questions: str, as_group=True):
 
     questions_dict = json.loads(questions)
 
-    display_questions(questions_dict["questions"], as_group=as_group,
+    if("additional_material" in questions_dict):
+        display_questions(questions_dict["questions"], as_group=as_group,
                       additional_material=questions_dict["additional_material"])
+    else:
+        display_questions(questions_dict["questions"], as_group=as_group)
+
+    

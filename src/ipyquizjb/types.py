@@ -1,20 +1,30 @@
-from typing import TypedDict, Literal, NotRequired, Any
 from collections.abc import Callable
+from typing import Literal, NotRequired, TypedDict, TypeAlias
+
 import ipywidgets as widgets
 
-type EvaluationFunction = Callable[[], float | None]
-type FeedbackCallback = Callable[[], None]
-type QuestionWidgetPackage = tuple[widgets.Box,
+EvaluationFunction: TypeAlias = Callable[[], float | None]
+FeedbackCallback: TypeAlias = Callable[[], None]
+QuestionWidgetPackage: TypeAlias  = tuple[widgets.Box,
                                    EvaluationFunction, FeedbackCallback]
-type FeedbackFunction = Callable[[Any], str]
+FeedbackFunction: TypeAlias = Callable[[float | None], str]
+DisplayFunction: TypeAlias = Callable[..., None]
 
 class AdditionalMaterial(TypedDict):
     type: NotRequired[Literal["TEXT", "VIDEO", "CODE"]]
     body: str
 
 class Question(TypedDict):
+    """
+    The typing of a dictionary representing a single question.
+    
+    when: When the question should be shown.
+        - "initial": when a question group is first displayed
+        - "retry": in the pool of questions to use after retrying
+    """
     type: Literal["MULTIPLE_CHOICE", "NUMERIC", "TEXT"]
     body: str
     answers: NotRequired[list[str]]  # Options
-    answer: list[str] | str  # Correct answer
+    answer: NotRequired[list[str] | str]  # Correct answer
     notes: NotRequired[list[str]]
+    when: NotRequired[Literal["initial", "retry"]]

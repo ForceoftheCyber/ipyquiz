@@ -1,7 +1,7 @@
 import ipywidgets as widgets
 from typing import Any
 from ipyquizjb.types import QuestionWidgetPackage, EvaluationFunction, FeedbackFunction
-from ipyquizjb.utils import get_evaluation_color, standard_feedback
+from ipyquizjb.utils import get_evaluation_color, standard_feedback, disable_input, question_title
 
 
 def generic_question(question: str,
@@ -27,14 +27,14 @@ def generic_question(question: str,
     - evaluation_function: a function returning an evaluation of the answer provided based on the input widget
     - feedback: A function giving textual feedback based on the result of the evaluation_function
     """
-    question_body_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    question_body_widget = question_title(question)
 
     output = widgets.Output()
     output.layout = {"padding": "0.25em", "margin": "0.2em"}
 
     def feedback_callback():
         evaluation = evaluation_function()
-        
+
         with output:
             # Clear output in case of successive calls
             output.clear_output()
@@ -45,11 +45,18 @@ def generic_question(question: str,
             # Sets border color based on evaluation
             output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
-    layout = widgets.VBox([question_body_widget,
-                           widgets.HBox([input_widget],
-                                        layout=widgets.Layout(padding="10px 20px 10px 20px", border="solid")),
-                           widgets.VBox([output],
-                                        layout=widgets.Layout(margin="10px 10px 0px 0px"))])
+        if evaluation is not None and evaluation != 1:
+            # Only disable on wrong input, not when not answered
+            disable_input(input_widget)
+
+    layout = widgets.VBox([
+        question_body_widget,
+        widgets.HBox([input_widget],
+                     layout=widgets.Layout(padding="0.5em")),
+        widgets.VBox([output]),
+    ],
+        layout=dict(border_bottom="solid", border_top="solid",
+                    padding="0.2em"))
 
     return layout, evaluation_function, feedback_callback
 
@@ -188,7 +195,7 @@ def no_input_question(question: str, solution: list[str]) -> QuestionWidgetPacka
 
     Corresponds to the FaceIT question type: TEXT.
     """
-    title_widget = widgets.HTMLMath(value=f"<h3>{question}</h3>")
+    title_widget = question_title(question)
 
     if len(solution) == 0:
         # If no solution provided
@@ -223,4 +230,6 @@ def no_input_question(question: str, solution: list[str]) -> QuestionWidgetPacka
     # Will not give feedback, as there is no input
     no_feedback = (lambda: None)
 
-    return widgets.VBox([title_widget, button, solution_box]), always_correct, no_feedback
+    return widgets.VBox([title_widget, button, solution_box],
+                        layout=dict(border_bottom="solid", border_top="solid",
+                                    padding="0.2em")), always_correct, no_feedback
