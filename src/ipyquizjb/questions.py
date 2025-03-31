@@ -126,7 +126,7 @@ def question_group(
                     case "VIDEO":
                         display(YouTubeVideo(body))
                     case "CODE":
-                        display(widgets.HTML(body))
+                        display(widgets.HTML(f"<pre>{body}</pre>"))
 
         render_additional_material()
         material_output.layout.display = "none"
