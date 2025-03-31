@@ -4,7 +4,7 @@ import ipywidgets as widgets
 from IPython.display import display, clear_output, YouTubeVideo
 import random
 
-from ipyquizjb.types import QuestionWidgetPackage, Question, AdditionalMaterial
+from ipyquizjb.types import QuestionPackage, QuestionWidgetPackage, Question, AdditionalMaterial
 
 from ipyquizjb.question_widgets import (
     multiple_choice,
@@ -71,7 +71,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], 
+    questions: list[Question],
     additional_material: AdditionalMaterial | None = None
 ) -> widgets.Box:
     """
@@ -253,6 +253,25 @@ def singleton_group(question: Question) -> widgets.Box:
 
 
 @display_message_on_error()
+def display_package(questions: QuestionPackage,
+                    as_group=True):
+    """
+    Displays a question package dictionary, defined by the QuestionPackage type.
+
+    Delegates to display_questions.
+    """
+    # If only text questions: no reason to group, and add no check-answer-button
+    if "additional_material" in questions:
+        additional_material = questions["additional_material"]
+    else:
+        additional_material = None
+    
+    display_questions(questions["questions"], 
+                      as_group=as_group, 
+                      additional_material=additional_material)
+
+
+@display_message_on_error()
 def display_questions(questions: list[Question], 
                       as_group=True, 
                       additional_material: AdditionalMaterial | None = None):
@@ -274,18 +293,14 @@ def display_questions(questions: list[Question],
 
 
 @display_message_on_error()
-def display_json(questions: str, 
+def display_json(questions: str,
                  as_group=True):
     """
     Displays question based on the json-string from the FaceIT-format.
 
-    Delegates to display_questions. 
+    Delegates to display_package. 
     """
 
     questions_dict = json.loads(questions)
 
-    if ("additional_material" in questions_dict):
-        display_questions(questions_dict["questions"], as_group=as_group,
-                          additional_material=questions_dict["additional_material"])
-    else:
-        display_questions(questions_dict["questions"], as_group=as_group)
+    display_package(questions_dict, as_group=as_group)

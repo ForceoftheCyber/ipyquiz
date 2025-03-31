@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Literal, NotRequired, TypedDict, TypeAlias
+from typing import Literal, NotRequired, Sequence, TypedDict, TypeAlias
 
 import ipywidgets as widgets
 
@@ -28,3 +28,12 @@ class Question(TypedDict):
     answer: NotRequired[list[str] | str]  # Correct answer
     notes: NotRequired[list[str]]
     when: NotRequired[Literal["initial", "retry"]]
+
+class QuestionPackage(TypedDict):
+    """
+    The typing of a dictionary representing a question package,
+    which includes a list of questions and potentially some more info.
+    """
+    questions: list[Question]
+    additional_material: NotRequired[AdditionalMaterial]
+    status: NotRequired[str]
