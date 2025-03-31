@@ -190,10 +190,6 @@ def question_group(
                 # Sets border color based on evaluation
                 feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
 
-
-            if evaluation != 1:
-                material_output.layout.display = "block"
-
             if evaluation is None:
                 # If some questions are not answered, only give feedback about them
                 for i, eval_function in enumerate(eval_functions):
@@ -208,7 +204,7 @@ def question_group(
                 # Exchange check_button for retry_button if wrong answers
                 check_button.layout.display = "none"
                 retry_button.layout.display = "block"
-
+                material_output.layout.display = "block"
 
         check_button = widgets.Button(description="Check answer", icon="check",
                                       style=dict(
