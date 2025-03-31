@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Literal, NotRequired, Sequence, TypedDict, TypeAlias
+from typing import Literal, NotRequired, TypeAlias, TypedDict
 
 import ipywidgets as widgets
 
