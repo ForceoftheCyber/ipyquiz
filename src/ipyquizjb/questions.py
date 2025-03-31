@@ -166,7 +166,7 @@ def question_group(
             if evaluation == None:
                 return "Some questions are not yet answered"
             elif evaluation == 1:
-                return "All questions are correctly answered!"
+                return "All questions are correctly answered! You may now proceed."
             elif evaluation == 0:
                 return "Wrong! No questions are correctly answered"
             return "Partially correct! Some questions are correctly answered"
