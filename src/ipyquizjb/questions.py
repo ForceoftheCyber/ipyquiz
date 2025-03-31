@@ -123,8 +123,8 @@ def question_group(
                 body = additional_material["body"]
                 match additional_material["type"]: 
                     case "TEXT":
-                        #Styled to h3, because p tag doesn't work
-                        styled_text = "<h3 style = \"font-size: 1em;\">" + body + "</h3>"
+                        # Styled to h3, because p tag doesn't work
+                        styled_text = f'<h3 style="font-size: 1em; font-weight: normal; line-height: normal">{body}</h3>'
                         display(widgets.HTML(styled_text))
                     case "VIDEO":
                         display(YouTubeVideo(body))
