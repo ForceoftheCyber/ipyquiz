@@ -1,11 +1,8 @@
 import json
 from ipyquizjb.utils import get_evaluation_color, display_message_on_error
-from ipyquizjb.utils import get_evaluation_color, display_message_on_error
 import ipywidgets as widgets
 from IPython.display import display, clear_output, YouTubeVideo
 import random
-
-
 
 from ipyquizjb.types import QuestionWidgetPackage, Question, AdditionalMaterial
 
@@ -74,7 +71,8 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], num_displayed: int | None = None, additional_material: AdditionalMaterial | None = None
+    questions: list[Question], 
+    additional_material: AdditionalMaterial | None = None
 ) -> widgets.Box:
     """
     Makes a widget of all the questions, along with a submit button.
@@ -116,12 +114,11 @@ def question_group(
     output = widgets.Output()  # This the output containing the whole group
     material_output = widgets.Output()
 
-
-    if(additional_material!=None):
+    if (additional_material is not None):
         def render_additional_material():
             with material_output:
                 body = additional_material["body"]
-                match additional_material["type"]: 
+                match additional_material["type"]:
                     case "TEXT":
                         # Styled to h3, because p tag doesn't work
                         styled_text = f'<h3 style="font-size: 1em; font-weight: normal; line-height: normal">{body}</h3>'
@@ -233,6 +230,7 @@ def question_group(
     render_group(True)
     return widgets.VBox([output, material_output])
 
+
 def singleton_group(question: Question) -> widgets.Box:
     """
     Makes a question group with a single question,
@@ -253,8 +251,11 @@ def singleton_group(question: Question) -> widgets.Box:
 
     return widgets.VBox([widget, button])
 
+
 @display_message_on_error()
-def display_questions(questions: list[Question], as_group=True, additional_material: AdditionalMaterial | None = None):
+def display_questions(questions: list[Question], 
+                      as_group=True, 
+                      additional_material: AdditionalMaterial | None = None):
     """
     Displays a list of questions.
 
@@ -262,8 +263,8 @@ def display_questions(questions: list[Question], as_group=True, additional_mater
     otherwise, each question gets a button.
     """
     # If only text questions: no reason to group, and add no check-answer-button
-    only_text_questions = all(question["type"] == "TEXT" for question in questions)
-
+    only_text_questions = all(
+        question["type"] == "TEXT" for question in questions)
 
     if as_group and not only_text_questions:
         display(question_group(questions, additional_material=additional_material))
@@ -271,8 +272,10 @@ def display_questions(questions: list[Question], as_group=True, additional_mater
         for question in questions:
             display(singleton_group(question))
 
+
 @display_message_on_error()
-def display_json(questions: str, as_group=True):
+def display_json(questions: str, 
+                 as_group=True):
     """
     Displays question based on the json-string from the FaceIT-format.
 
@@ -281,10 +284,8 @@ def display_json(questions: str, as_group=True):
 
     questions_dict = json.loads(questions)
 
-    if("additional_material" in questions_dict):
+    if ("additional_material" in questions_dict):
         display_questions(questions_dict["questions"], as_group=as_group,
-                      additional_material=questions_dict["additional_material"])
+                          additional_material=questions_dict["additional_material"])
     else:
         display_questions(questions_dict["questions"], as_group=as_group)
-
-    
