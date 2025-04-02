@@ -1,6 +1,8 @@
 import ipywidgets as widgets
-from ipyquizjb.types import DisplayFunction
 from IPython.display import display
+
+from ipyquizjb.types import DisplayFunction
+
 
 def get_evaluation_color(evaluation: float | None) -> str:
     """
@@ -18,6 +20,7 @@ def get_evaluation_color(evaluation: float | None) -> str:
         # Returns not-real color on error, does not display the border.
         return "none"
 
+
 def standard_feedback(evaluation: float | None) -> str:
     """
     Returns a standard feedback based on a question evaluation
@@ -34,19 +37,22 @@ def standard_feedback(evaluation: float | None) -> str:
         # Should not happen
         return "Your score could not be correctly calculated"
 
+
 def disable_input(input_widget: widgets.Box | widgets.Widget):
     if isinstance(input_widget, widgets.Box):
         for child in input_widget.children:
             disable_input(child)
-    elif isinstance(input_widget, widgets.Widget) and hasattr(input_widget,"disabled"):
+    elif isinstance(input_widget, widgets.Widget) and hasattr(input_widget, "disabled"):
         # Not all widgets can be disabled, only disable those that can be
         input_widget.disabled = True  # type: ignore
+
 
 def question_title(question: str) -> widgets.Widget:
     """
     Returns a widget for question title with some styling
     """
     return widgets.HTMLMath(value=f"<h2 style='font-size: 1.25em;'>{question}</h2>")
+
 
 def display_message_on_error(message: str = "Could not display questions."):
     """
@@ -64,6 +70,7 @@ def display_message_on_error(message: str = "Could not display questions."):
                 display_function(*args, **kwargs)
             except Exception:
                 # Catches all exceptions
-                display(widgets.HTML(f"<p style='font-size: 2em; font-weight: bold; font-style: italic; background-color: lightcoral; padding: 1em'>An error occurred: {message}</p>"))
+                display(widgets.HTML(
+                    f"<p style='font-size: 2em; font-weight: bold; font-style: italic; background-color: lightcoral; padding: 1em'>An error occurred: {message}</p>"))
         return wrapper
     return decorator
