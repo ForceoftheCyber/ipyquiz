@@ -73,12 +73,22 @@ function typesetAll() {
 
 versionAgnosticTypeset();
 
-// If we have not overridden version 3, we should
-// use another renderer that does not have a visual bug on some devices (e. g. Mac).
-// PreviewHTML is not available for MathJax version 3, though.
-if (!MathJax.version.startsWith("3")) {
-    MathJax.Hub.setRenderer("PreviewHTML");
+function changeRendererOnReady(retries) {
+    // Will repeatedly check for MathJax version 2 and change renderer
+    // if its available. Will stop after a minute, if it is not found.
+
+    // If we have not yet overridden version 3, we should
+    // use another renderer that does not have a visual bug on some devices (e. g. Mac).
+    // PreviewHTML is not available for MathJax version 3, though.
+    if (!MathJax.version.startsWith("3")) {
+        MathJax.Hub.setRenderer("PreviewHTML");
+    } else if (retries < 600) {
+        setTimeout(() => {changeRendererOnReady(retries+1)}, 100)
+    }
 }
+
+// Initiate busy waiting
+setTimeout(() => {changeRendererOnReady(0)}, 0)
 </script>"""))
 
 
