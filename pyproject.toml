@@ -1,6 +1,6 @@
 [project]
 name = "ipyquizjb"
-version = "0.3.7dev3"
+version = "0.3.7dev4"
 description = "Quizzes for Jupyter"
 dependencies = [
     "ipython",
