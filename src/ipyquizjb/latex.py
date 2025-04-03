@@ -43,7 +43,11 @@ function versionAgnosticTypeset(element) {
     }
 }
 
+// Makes buttons with rendered math clickable by
+// listening for click on the math and then resending a math
 function make_latex_buttons_clickable() {
+    // Get elements where either CHTML or PreviewHTML is the renderer
+    const math_elements = [...document.getElementsByClassName("MathJax_CHTML"), ...document.getElementsByClassName("MathJax_PHTML")]
     for (el of document.getElementsByClassName("mjx-chtml MathJax_CHTML")) {
         if (element.hasAttribute('clickable-math-listener')) {
             // Skip if listener is already attached
@@ -71,17 +75,16 @@ function typesetAll() {
     }
 }
 
-versionAgnosticTypeset();
 
+// Will repeatedly check for MathJax version 2 and change renderer
+// if its available. Will stop after a minute, if it is not found.
 function changeRendererOnReady(retries) {
-    // Will repeatedly check for MathJax version 2 and change renderer
-    // if its available. Will stop after a minute, if it is not found.
-
     // If we have not yet overridden version 3, we should
     // use another renderer that does not have a visual bug on some devices (e. g. Mac).
     // PreviewHTML is not available for MathJax version 3, though.
     if (!MathJax.version.startsWith("3")) {
         MathJax.Hub.setRenderer("PreviewHTML");
+        versionAgnosticTypeset();
     } else if (retries < 600) {
         setTimeout(() => {changeRendererOnReady(retries+1)}, 100)
     }
