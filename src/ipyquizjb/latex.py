@@ -72,6 +72,13 @@ function typesetAll() {
 }
 
 versionAgnosticTypeset();
+
+// If we have not overridden version 3, we should
+// use another renderer that does not have a visual bug on some devices (e. g. Mac).
+// PreviewHTML is not available for MathJax version 3, though.
+if (!MathJax.version.startsWith("3")) {
+    MathJax.Hub.setRenderer("PreviewHTML");
+}
 </script>"""))
 
 
