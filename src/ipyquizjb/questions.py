@@ -1,10 +1,15 @@
 import json
 from ipyquizjb.utils import get_evaluation_color, display_message_on_error
 import ipywidgets as widgets
-from IPython.display import display, clear_output, YouTubeVideo
+from IPython.display import display, clear_output, YouTubeVideo, HTML
 import random
 
-from ipyquizjb.types import QuestionPackage, QuestionWidgetPackage, Question, AdditionalMaterial
+from ipyquizjb.types import (
+    QuestionPackage,
+    QuestionWidgetPackage,
+    Question,
+    AdditionalMaterial,
+)
 
 from ipyquizjb.question_widgets import (
     multiple_choice,
@@ -12,7 +17,6 @@ from ipyquizjb.question_widgets import (
     no_input_question,
     numeric_input,
 )
-
 
 def make_question(question: Question) -> QuestionWidgetPackage:
     """
@@ -57,22 +61,24 @@ def make_question(question: Question) -> QuestionWidgetPackage:
                     "question['answer'] should not be a list when question type is multiple choice"
                 )
             return numeric_input(
-                question=question["body"], correct_answer=float(
-                    question["answer"])
+                question=question["body"],
+                correct_answer=float(question["answer"]),
             )
 
         case "TEXT":
             solution_notes = question["notes"] if "notes" in question else []
 
-            return no_input_question(question=question["body"], solution=solution_notes)
+            return no_input_question(
+                question=question["body"],
+                solution=solution_notes,
+            )
 
         case _:
             raise NameError(f"{question['type']} is not a valid question type")
 
 
 def question_group(
-    questions: list[Question],
-    additional_material: AdditionalMaterial | None = None
+    questions: list[Question], additional_material: AdditionalMaterial | None = None
 ) -> widgets.Box:
     """
     Makes a widget of all the questions, along with a submit button.
@@ -114,14 +120,16 @@ def question_group(
     output = widgets.Output()  # This the output containing the whole group
     material_output = widgets.Output()
 
-    if (additional_material is not None):
+    if additional_material is not None:
+
         def render_additional_material():
             with material_output:
                 body = additional_material["body"]
-                if "type" not in additional_material or additional_material["type"] == "TEXT":
-                    # Styled to h3, because p tag doesn't work
-                    styled_text = f'<h3 style="font-size: 1em; font-weight: normal; line-height: normal">{body}</h3>'
-                    display(widgets.HTML(styled_text))
+                if (
+                    "type" not in additional_material
+                    or additional_material["type"] == "TEXT"
+                ):
+                    display(widgets.HTML(f"<p>{body}</p>"))
                 elif additional_material["type"] == "VIDEO":
                     display(YouTubeVideo(body))
                 elif additional_material["type"] == "CODE":
@@ -149,7 +157,8 @@ def question_group(
 
     def build_group(questions) -> widgets.Box:
         question_boxes, eval_functions, feedback_callbacks = zip(
-            *(make_question(question) for question in questions))
+            *(make_question(question) for question in questions)
+        )
 
         def group_evaluation():
             if any(func() is None for func in eval_functions):
@@ -162,13 +171,25 @@ def question_group(
             return group_sum / max_score  # Normalized to 0-1
 
         def feedback(evaluation: float | None):
-            if evaluation == None:
-                return "Some questions are not yet answered"
+            if evaluation is None:
+                return "Some questions are not yet answered."
             elif evaluation == 1:
                 return "All questions are correctly answered! You may now proceed."
             elif evaluation == 0:
-                return "Wrong! No questions are correctly answered"
-            return "Partially correct! Some questions are correctly answered"
+                evaluation_message = "Wrong! No questions are correctly answered."
+                if additional_material:
+                    evaluation_message += (
+                        "<br>Please review the additional material and try again."
+                    )
+                return evaluation_message
+            evaluation_message = (
+                "Partially correct! Some questions are correctly answered."
+            )
+            if additional_material:
+                evaluation_message += (
+                    "<br>Please review the additional material and try again."
+                )
+            return evaluation_message
 
         feedback_output = widgets.Output()
         feedback_output.layout = {"padding": "0.25em", "margin": "0.2em"}
@@ -180,11 +201,13 @@ def question_group(
                 # Clear output in case of successive calls
                 feedback_output.clear_output()
 
-                # Print feedback to output
-                print(feedback(evaluation))
+                # Displays feedback to output
+                display(widgets.HTML(f"<p>{feedback(evaluation)}</p>"))
 
                 # Sets border color based on evaluation
-                feedback_output.layout.border_left = f"solid {get_evaluation_color(evaluation)} 1em"
+                feedback_output.layout.border_left = (
+                    f"solid {get_evaluation_color(evaluation)} 1em"
+                )
 
             if evaluation is None:
                 # If some questions are not answered, only give feedback about them
@@ -202,29 +225,34 @@ def question_group(
                 retry_button.layout.display = "block"
                 material_output.layout.display = "block"
 
-        check_button = widgets.Button(description="Check answer", icon="check",
-                                      style=dict(
-                                          button_color="lightgreen"
-                                      ),
-                                      layout=dict(width="auto"))
+        check_button = widgets.Button(
+            description="Check answer",
+            icon="check",
+            style=dict(
+                button_color="lightgreen",
+                font_size="16px",
+            ),
+            layout=dict(width="auto"),
+        )
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
             description="Try again with new questions",
             icon="refresh",
             style=dict(
-                button_color="orange"
+                button_color="orange",
+                font_size="16px",
             ),
-            layout=dict(width="auto")
+            layout=dict(width="auto"),
         )
         retry_button.layout.display = "none"  # Initially hidden
         retry_button.on_click(lambda btn: render_group(False))
 
-        questions_box = widgets.VBox(question_boxes, layout=dict(
-            padding="1em"
-        ))
+        questions_box = widgets.VBox(question_boxes, layout=dict(padding="1em"))
 
-        return widgets.VBox([questions_box, widgets.HBox([check_button, retry_button]), feedback_output])
+        return widgets.VBox(
+            [questions_box, widgets.HBox([check_button, retry_button]), feedback_output]
+        )
 
     render_group(True)
     return widgets.VBox([output, material_output])
@@ -233,7 +261,7 @@ def question_group(
 def singleton_group(question: Question) -> widgets.Box:
     """
     Makes a question group with a single question,
-    including a button for evaluation the question. 
+    including a button for evaluation the question.
     """
 
     widget, _, feedback_callback = make_question(question)
@@ -242,18 +270,16 @@ def singleton_group(question: Question) -> widgets.Box:
         # Nothing to check if the question has no input
         return widget
 
-    button = widgets.Button(description="Check answer", icon="check",
-                            style=dict(
-                                button_color="lightgreen"
-                            ))
+    button = widgets.Button(
+        description="Check answer", icon="check", style=dict(button_color="lightgreen")
+    )
     button.on_click(lambda button: feedback_callback())
 
     return widgets.VBox([widget, button])
 
 
 @display_message_on_error()
-def display_package(questions: QuestionPackage,
-                    as_group=True):
+def display_package(questions: QuestionPackage, as_group=True):
     """
     Displays a question package dictionary, defined by the QuestionPackage type.
 
@@ -264,16 +290,20 @@ def display_package(questions: QuestionPackage,
         additional_material = questions["additional_material"]
     else:
         additional_material = None
-    
-    display_questions(questions["questions"], 
-                      as_group=as_group, 
-                      additional_material=additional_material)
+
+    display_questions(
+        questions["questions"],
+        as_group=as_group,
+        additional_material=additional_material,
+    )
 
 
 @display_message_on_error()
-def display_questions(questions: list[Question], 
-                      as_group=True, 
-                      additional_material: AdditionalMaterial | None = None):
+def display_questions(
+    questions: list[Question],
+    as_group=True,
+    additional_material: AdditionalMaterial | None = None,
+):
     """
     Displays a list of questions.
 
@@ -281,8 +311,7 @@ def display_questions(questions: list[Question],
     otherwise, each question gets a button.
     """
     # If only text questions: no reason to group, and add no check-answer-button
-    only_text_questions = all(
-        question["type"] == "TEXT" for question in questions)
+    only_text_questions = all(question["type"] == "TEXT" for question in questions)
 
     if as_group and not only_text_questions:
         display(question_group(questions, additional_material=additional_material))
@@ -292,12 +321,11 @@ def display_questions(questions: list[Question],
 
 
 @display_message_on_error()
-def display_json(questions: str,
-                 as_group=True):
+def display_json(questions: str, as_group=True):
     """
     Displays question based on the json-string from the FaceIT-format.
 
-    Delegates to display_package. 
+    Delegates to display_package.
     """
 
     questions_dict = json.loads(questions)
