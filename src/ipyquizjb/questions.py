@@ -5,7 +5,8 @@ from ipyquizjb.utils import (
     check_answer_button,
 )
 import ipywidgets as widgets
-from IPython.display import display, clear_output, YouTubeVideo, HTML
+from ipyquizjb.latex import latexize, render_latex, setup_latex
+from IPython.display import display, clear_output, YouTubeVideo, HTML, Javascript
 import random
 
 from ipyquizjb.types import (
@@ -160,6 +161,8 @@ def question_group(
 
             display(build_group(questions_displayed))
 
+            render_latex()
+
     def build_group(questions) -> widgets.Box:
         question_boxes, eval_functions, feedback_callbacks = zip(
             *(make_question(question) for question in questions)
@@ -229,6 +232,10 @@ def question_group(
                 check_button.layout.display = "none"
                 retry_button.layout.display = "block"
                 material_output.layout.display = "block"
+                
+                # Rerender when display disabled
+                with output:
+                    render_latex()
 
         check_button = check_answer_button()
         check_button.description = "Check answer"
@@ -310,14 +317,18 @@ def display_questions(
     If as_group is true, it is displayed as a group with one "Check answer"-button,
     otherwise, each question gets a button.
     """
+    setup_latex()
+
     # If only text questions: no reason to group, and add no check-answer-button
     only_text_questions = all(question["type"] == "TEXT" for question in questions)
 
     if as_group and not only_text_questions:
-        display(question_group(questions, additional_material=additional_material))
+        display(latexize(question_group(questions, additional_material=additional_material)))
     else:
         for question in questions:
-            display(singleton_group(question))
+            display(latexize(singleton_group(question)))
+
+    render_latex()
 
 
 @display_message_on_error()
