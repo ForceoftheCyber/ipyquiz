@@ -91,5 +91,4 @@ def check_answer_button() -> widgets.Button:
             font_size="1em",
         )
     )
-    display(button)
     return button
