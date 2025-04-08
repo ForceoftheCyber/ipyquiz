@@ -1,7 +1,7 @@
 import ipywidgets as widgets
-from ipyquizjb.types import DisplayFunction
 from IPython.display import display
 
+from ipyquizjb.types import DisplayFunction
 
 def get_evaluation_color(evaluation: float | None) -> str:
     """
@@ -51,6 +51,7 @@ def question_title(question: str) -> widgets.Widget:
     Returns a widget for question title with some styling
     """
     return widgets.HTMLMath(value=f"<h2 style='font-size: 1.40em;'>{question}</h2>")
+
 
 
 def display_message_on_error(message: str = "Could not display questions."):
