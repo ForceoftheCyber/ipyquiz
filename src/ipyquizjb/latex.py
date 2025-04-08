@@ -21,61 +21,39 @@ def setup_latex():
     Sets up functions for Math/Latex rendering 
     and does an initial typesetting.
 
-    NOTE:
-    The version of MathJax seems to change when using IPython.display.HTML,
-    but exactly when it happens varies, we are therefore checking the version
-    before calling the corresponding typesetting function.
+    Assumes MathJax version 3.
     """
     display(HTML("""<script>
-function versionAgnosticTypeset(element) {
-    if (MathJax.version.startsWith("3")) {
-        if (element) {
-            MathJax.typeset([element]) 
-        } else {
-            MathJax.typeset()
-        }   
-    } else {
-        if (element) {
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub, element]);
-        } else {
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
-        }   
-    }
-}
-
 // Makes buttons with rendered math clickable by
-// listening for click on the math and then resending a math
+// listening for click on the math and then 
+// resending a click to the actual button
 function make_latex_buttons_clickable() {
-    // Get elements where either CHTML or PreviewHTML is the renderer
-    const math_elements = [...document.getElementsByClassName("MathJax_CHTML"), ...document.getElementsByClassName("MathJax_PHTML")]
-    for (el of document.getElementsByClassName("mjx-chtml MathJax_CHTML")) {
+    for (element of document.querySelectorAll("button mjx-container")) {
         if (element.hasAttribute('clickable-math-listener')) {
             // Skip if listener is already attached
-                 return;
+            continue;
         }
-        el.addEventListener("click", (e) => {
+        element.addEventListener("click", (e) => {
             // Find the actual button and click it
             e.stopPropagation();
-            var element = e.target;
-            var parent = element.parentElement
+            var parent = e.target.parentElement
             while (!parent.classList.contains("jupyter-button")) {
                 parent = parent.parentElement;
             }
             parent.click();	
         });
-        el.setAttribute("clickable-math-listener", "");
+        element.setAttribute("clickable-math-listener", "");
     };
 }
                 
 // Used on every rerender
 function typesetAll() {
     console.log("Rerender typeset");
-    for (element of document.getElementsByClassName("ipyquizjb-render-math")) {
-        versionAgnosticTypeset(element);
-    }
+    MathJax.typeset([...document.getElementsByClassName("ipyquizjb-render-math")]);
+    make_latex_buttons_clickable();
 }
 
-versionAgnosticTypeset();
+typesetAll();
 </script>"""))
 
 
@@ -83,14 +61,4 @@ def render_latex():
     """
     Typesets elements with the "ipyquizjb-render-math"-class.
     """
-    display(HTML("<script>typesetAll()</script>"))
-
-
-def make_latex_buttons_clickable():
-    """
-    Schedules the function for making buttons with latex clickable
-    after the Latex is typeset.
-    """
-    display(HTML("""<script>
-MathJax.Hub.Queue(make_latex_buttons_clickable)
-</script>"""))
+    display(HTML("<script>typesetAll();</script>"))

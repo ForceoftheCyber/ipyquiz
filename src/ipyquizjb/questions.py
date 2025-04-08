@@ -1,8 +1,8 @@
 import json
-from ipyquizjb.latex import make_latex_buttons_clickable,  latexize, render_latex, setup_latex
+from ipyquizjb.latex import latexize, render_latex, setup_latex
 from ipyquizjb.utils import get_evaluation_color, display_message_on_error
 import ipywidgets as widgets
-from IPython.display import display, clear_output, YouTubeVideo, HTML
+from IPython.display import display, clear_output, YouTubeVideo, HTML, Javascript
 import random
 
 from ipyquizjb.types import QuestionPackage, QuestionWidgetPackage, Question, AdditionalMaterial
@@ -149,7 +149,6 @@ def question_group(
             display(build_group(questions_displayed))
 
             render_latex()
-            make_latex_buttons_clickable()
 
     def build_group(questions) -> widgets.Box:
         question_boxes, eval_functions, feedback_callbacks = zip(
