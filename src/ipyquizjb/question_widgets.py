@@ -6,6 +6,7 @@ from ipyquizjb.utils import (
     standard_feedback,
     disable_input,
     question_title,
+    check_answer_button,
 )
 from IPython.display import display
 
@@ -246,14 +247,9 @@ def no_input_question(question: str, solution: list[str]) -> QuestionWidgetPacka
             solution_box.layout.display = "none"
             button.description = "Show solution"
 
-    button = widgets.Button(
-        description="Show solution",
-        icon="check",
-        style=dict(
-            button_color="lightgreen",
-            font_size="16px",
-        ),
-    )
+    button = check_answer_button()
+    button.description = "Show solution"
+    button.icon = "check"
 
     button.on_click(reveal_solution)
 

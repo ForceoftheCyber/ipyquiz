@@ -1,5 +1,9 @@
 import json
-from ipyquizjb.utils import get_evaluation_color, display_message_on_error
+from ipyquizjb.utils import (
+    get_evaluation_color,
+    display_message_on_error,
+    check_answer_button,
+)
 import ipywidgets as widgets
 from IPython.display import display, clear_output, YouTubeVideo, HTML
 import random
@@ -17,6 +21,7 @@ from ipyquizjb.question_widgets import (
     no_input_question,
     numeric_input,
 )
+
 
 def make_question(question: Question) -> QuestionWidgetPackage:
     """
@@ -225,15 +230,10 @@ def question_group(
                 retry_button.layout.display = "block"
                 material_output.layout.display = "block"
 
-        check_button = widgets.Button(
-            description="Check answer",
-            icon="check",
-            style=dict(
-                button_color="lightgreen",
-                font_size="16px",
-            ),
-            layout=dict(width="auto"),
-        )
+        check_button = check_answer_button()
+        check_button.description = "Check answer"
+        check_button.icon = "check"
+        check_button.layout = dict(width="auto")
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
@@ -241,7 +241,7 @@ def question_group(
             icon="refresh",
             style=dict(
                 button_color="orange",
-                font_size="16px",
+                font_size="1em",
             ),
             layout=dict(width="auto"),
         )
@@ -270,9 +270,9 @@ def singleton_group(question: Question) -> widgets.Box:
         # Nothing to check if the question has no input
         return widget
 
-    button = widgets.Button(
-        description="Check answer", icon="check", style=dict(button_color="lightgreen")
-    )
+    button = check_answer_button()
+    button.description = "Check answer"
+    button.icon = "check"
     button.on_click(lambda button: feedback_callback())
 
     return widgets.VBox([widget, button])
