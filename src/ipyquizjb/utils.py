@@ -3,7 +3,8 @@ from IPython.display import display
 
 from ipyquizjb.types import DisplayFunction
 
-def get_evaluation_color(evaluation: float | None) -> str:
+def get_evaluation_color(evaluation: float | None,
+                         passing_threshold: float = 1) -> str:
     """
     Returns a string with a css color name based on a question evaluation
     """
@@ -11,7 +12,7 @@ def get_evaluation_color(evaluation: float | None) -> str:
         return "lightgrey"
     elif evaluation == 0:
         return "lightcoral"
-    elif evaluation == 1:
+    elif evaluation >= passing_threshold:
         return "lightgreen"
     elif 0 < evaluation < 1:
         return "yellow"
