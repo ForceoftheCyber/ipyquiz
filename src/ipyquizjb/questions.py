@@ -212,7 +212,7 @@ def question_group(
 
                 # Sets border color based on evaluation
                 feedback_output.layout.border_left = (
-                    f"solid {get_evaluation_color(evaluation)} 1em"
+                    f"solid {get_evaluation_color(evaluation, passing_threshold=passing_threshold)} 1em"
                 )
 
             if evaluation is None:
@@ -242,7 +242,8 @@ def question_group(
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
-            description="Try again" + ("" if no_separate_retry_questions else " with new questions"),
+            description="Try again" +
+            ("" if no_separate_retry_questions else " with new questions"),
             icon="refresh",
             style=dict(
                 button_color="orange",
