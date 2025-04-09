@@ -103,7 +103,9 @@ def question_group(
             initial_questions.append(question)
         elif question["when"] == "retry":
             retry_questions.append(question)
-    if len(retry_questions) == 0:
+
+    no_separate_retry_questions = len(retry_questions) == 0
+    if no_separate_retry_questions:
         # Use same questions for retry if there are no designated
         # retry questions.
         retry_questions = initial_questions
@@ -232,7 +234,7 @@ def question_group(
         check_button.on_click(feedback_callback)
 
         retry_button = widgets.Button(
-            description="Try again with new questions",
+            description="Try again" + ("" if no_separate_retry_questions else " with new questions"),
             icon="refresh",
             style=dict(
                 button_color="orange",
