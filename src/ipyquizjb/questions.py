@@ -38,9 +38,7 @@ def make_question(question: Question) -> QuestionWidgetPackage:
                     "Multiple choice should have list of possible answers (options)"
                 )
             return multiple_choice(
-                question=question["body"],
-                options=question["answers"],
-                correct_option=question["answer"][0],
+                question=question
             )
 
         case "MULTIPLE_CHOICE":
@@ -55,28 +53,18 @@ def make_question(question: Question) -> QuestionWidgetPackage:
                     "Multiple choice should have list of possible answers (options)"
                 )
             return multiple_answers(
-                question=question["body"],
-                options=question["answers"],
-                correct_answers=question["answer"],
+                question=question
             )
 
         case "NUMERIC":
-            assert "answer" in question
-            if isinstance(question["answer"], list):
-                raise TypeError(
-                    "question['answer'] should not be a list when question type is multiple choice"
-                )
+
             return numeric_input(
-                question=question["body"],
-                correct_answer=float(question["answer"]),
+                question=question
             )
 
         case "TEXT":
-            solution_notes = question["notes"] if "notes" in question else []
-
             return no_input_question(
-                question=question["body"],
-                solution=solution_notes,
+                question=question
             )
 
         case _:
@@ -232,7 +220,7 @@ def question_group(
                 check_button.layout.display = "none"
                 retry_button.layout.display = "block"
                 material_output.layout.display = "block"
-                
+
                 # Rerender when display disabled
                 with output:
                     render_latex()
@@ -255,10 +243,12 @@ def question_group(
         retry_button.layout.display = "none"  # Initially hidden
         retry_button.on_click(lambda btn: render_group(False))
 
-        questions_box = widgets.VBox(question_boxes, layout=dict(padding="1em"))
+        questions_box = widgets.VBox(
+            question_boxes, layout=dict(padding="1em"))
 
         return widgets.VBox(
-            [questions_box, widgets.HBox([check_button, retry_button]), feedback_output]
+            [questions_box, widgets.HBox(
+                [check_button, retry_button]), feedback_output]
         )
 
     render_group(True)
@@ -320,10 +310,12 @@ def display_questions(
     setup_latex()
 
     # If only text questions: no reason to group, and add no check-answer-button
-    only_text_questions = all(question["type"] == "TEXT" for question in questions)
+    only_text_questions = all(
+        question["type"] == "TEXT" for question in questions)
 
     if as_group and not only_text_questions:
-        display(latexize(question_group(questions, additional_material=additional_material)))
+        display(latexize(question_group(
+            questions, additional_material=additional_material)))
     else:
         for question in questions:
             display(latexize(singleton_group(question)))
