@@ -72,7 +72,9 @@ def make_question(question: Question) -> QuestionWidgetPackage:
 
 
 def question_group(
-    questions: list[Question], additional_material: AdditionalMaterial | None = None
+    questions: list[Question],
+    additional_material: AdditionalMaterial | None = None,
+    passing_threshold: float = 1
 ) -> widgets.Box:
     """
     Makes a widget of all the questions, along with a submit button.
@@ -83,11 +85,12 @@ def question_group(
 
     Args:
         questions (list[Question]):
-        num_displayed (int): The number of questions to be displayed at once.
+        additional_material: will be displayed when the test is failed
+        passing_threshold: Proportion of correct questions needed to pass. 
+            Number in range 0-1.
 
     Returns:
         An Output widget containing the elements:
-
         - VBox (questions)
         - Button (submit)
         - Output (text feedback)
@@ -169,22 +172,27 @@ def question_group(
         def feedback(evaluation: float | None):
             if evaluation is None:
                 return "Some questions are not yet answered."
-            elif evaluation == 1:
-                return "All questions are correctly answered! You may now proceed."
+            elif evaluation >= passing_threshold:
+                return f"You passed with {evaluation:.1%}! You may now proceed."
             elif evaluation == 0:
                 evaluation_message = "Wrong! No questions are correctly answered."
+
                 if additional_material:
                     evaluation_message += (
                         "<br>Please review the additional material and try again."
                     )
+
                 return evaluation_message
+
             evaluation_message = (
-                "Partially correct! Some questions are correctly answered."
+                f"Partially correct (Score: {evaluation:.1%})! Some questions are correctly answered."
             )
+
             if additional_material:
                 evaluation_message += (
                     "<br>Please review the additional material and try again."
                 )
+
             return evaluation_message
 
         feedback_output = widgets.Output()
@@ -215,7 +223,7 @@ def question_group(
             for callback in feedback_callbacks:
                 callback()
 
-            if evaluation != 1:
+            if evaluation < passing_threshold:
                 # Exchange check_button for retry_button if wrong answers
                 check_button.layout.display = "none"
                 retry_button.layout.display = "block"
@@ -288,10 +296,16 @@ def display_package(questions: QuestionPackage, as_group=True):
     else:
         additional_material = None
 
+    if "passing_threshold" in questions:
+        passing_threshold = questions["passing_threshold"]
+    else:
+        passing_threshold = 1
+
     display_questions(
         questions["questions"],
         as_group=as_group,
         additional_material=additional_material,
+        passing_threshold=passing_threshold
     )
 
 
@@ -300,6 +314,7 @@ def display_questions(
     questions: list[Question],
     as_group=True,
     additional_material: AdditionalMaterial | None = None,
+    passing_threshold: float = 1
 ):
     """
     Displays a list of questions.
@@ -315,7 +330,7 @@ def display_questions(
 
     if as_group and not only_text_questions:
         display(latexize(question_group(
-            questions, additional_material=additional_material)))
+            questions, additional_material=additional_material, passing_threshold=passing_threshold)))
     else:
         for question in questions:
             display(latexize(singleton_group(question)))

@@ -37,3 +37,4 @@ class QuestionPackage(TypedDict):
     questions: list[Question]
     additional_material: NotRequired[AdditionalMaterial]
     status: NotRequired[str]
+    passing_threshold: NotRequired[float]  # number between 0-1, threshold for passing group
