@@ -3,10 +3,9 @@ from IPython.display import display
 
 from ipyquizjb.types import DisplayFunction
 
-
 def get_evaluation_color(evaluation: float | None) -> str:
     """
-    Returns a string with a css color name based on a question evaluation 
+    Returns a string with a css color name based on a question evaluation
     """
     if evaluation == None:
         return "lightgrey"
@@ -51,7 +50,8 @@ def question_title(question: str) -> widgets.Widget:
     """
     Returns a widget for question title with some styling
     """
-    return widgets.HTMLMath(value=f"<h2 style='font-size: 1.25em;'>{question}</h2>")
+    return widgets.HTMLMath(value=f"<h2 style='font-size: 1.40em;'>{question}</h2>")
+
 
 
 def display_message_on_error(message: str = "Could not display questions."):
@@ -64,13 +64,32 @@ def display_message_on_error(message: str = "Could not display questions."):
         on the line above the display function definition,
         and optionally provide a custom error message.
     """
+
     def decorator(display_function: DisplayFunction):
         def wrapper(*args, **kwargs):
             try:
                 display_function(*args, **kwargs)
             except Exception:
                 # Catches all exceptions
-                display(widgets.HTML(
-                    f"<p style='font-size: 2em; font-weight: bold; font-style: italic; background-color: lightcoral; padding: 1em'>An error occurred: {message}</p>"))
+                display(
+                    widgets.HTML(
+                        f"<p style='font-size: 2em; font-weight: bold; font-style: italic; background-color: lightcoral; padding: 1em'>An error occurred: {message}</p>"
+                    )
+                )
+
         return wrapper
+
     return decorator
+
+
+def check_answer_button() -> widgets.Button:
+    """
+    Returns a styled button for checking answers
+    """
+    button = widgets.Button(
+        style=dict(
+            button_color="lightgreen",
+            font_size="1em",
+        )
+    )
+    return button
