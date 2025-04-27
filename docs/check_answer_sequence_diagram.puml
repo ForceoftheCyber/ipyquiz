@@ -1,4 +1,4 @@
-@startuml
+@startuml "Check answer sequence diagram"
 actor user
 participant "[Check answer]-button" as check_answer
 participant group_feedback_callback

@@ -1,4 +1,4 @@
-@startuml
+@startuml "Check answer call graph"
 skinparam componentStyle rectangle
 actor user
 ["Check answer"-button] as check_answer

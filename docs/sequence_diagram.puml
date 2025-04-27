@@ -1,4 +1,4 @@
-@startuml
+@startuml "Display function sequence diagram"
 participant display_questions
 participant question_group
 participant make_question
