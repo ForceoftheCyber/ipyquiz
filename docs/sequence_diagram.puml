@@ -1,0 +1,27 @@
+@startuml
+participant display_questions
+participant question_group
+participant make_question
+participant multiple_choice
+participant generic_question
+participant no_input_question
+
+display_questions -> question_group : questions,\nas_group,\nadditional_material,\npassing_threshold
+
+' Multiple choice
+question_group -> make_question : question
+make_question -> multiple_choice : question
+multiple_choice -> generic_question : question,\ninput_widget,\nevaluation_function,\nfeedback_function
+generic_question --> multiple_choice : question_widget,\nevaluation_function,\nfeedback_callback
+multiple_choice --> make_question : question_widget,\nevaluation_function,\nfeedback_callback
+make_question --> question_group : question_widget,\nevaluation_function,\nfeedback_callback
+
+' TEXT
+question_group -> make_question : question
+make_question -> no_input_question : question
+no_input_question --> make_question : question_widget,\nevaluation_function,\nfeedback_callback
+make_question --> question_group : question_widget,\nevaluation_function,\nfeedback_callback
+
+question_group --> display_questions : group_widget_box
+
+@enduml
