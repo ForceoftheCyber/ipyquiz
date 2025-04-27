@@ -114,7 +114,6 @@ def multiple_answers(
     Multiple-choice-multiple-answers type question.
 
     Delegates to generic_question.
-
     """
     assert "answers" in question
     assert "answer" in question
