@@ -26,7 +26,7 @@ pip install ipyquizjb @ git+https://github.com/ForceoftheCyber/ipyquiz.git
 *See the notebook [example.ipynb](examples/example.ipynb) for examples of the quizzes.*
 
 Add a quiz to the notebook using the function `display_package(questions: QuestionPackage, as_group=True)`.
-- `questions` is a dictionary of questions and ekstra data in the `QuestionPackage`-format described below under [Question format](#question-format).
+- `questions` is a dictionary of questions and extra data in the `QuestionPackage`-format described below under [Question format](#question-format).
 - If `as_group` is true, the questions will be displayed in a group with controls for checking the answers and evaluation of the group as a whole. If it is false, each question will have their own "Check answer"-button.
 
 Main functionality for question groups:
