@@ -1,0 +1,29 @@
+@startuml "Check answer sequence diagram"
+actor user
+participant "[Check answer]-button" as check_answer
+participant group_feedback_callback
+participant group_evaluation_function
+participant group_feedback_function
+participant feedback_callback
+participant evaluation_function
+participant feedback_function
+
+user -> check_answer : clicks
+check_answer -> group_feedback_callback : calls
+group_feedback_callback -> group_evaluation_function : calls
+loop for all questions in group
+    group_evaluation_function -> evaluation_function : calls
+    evaluation_function --> group_evaluation_function : return score
+end
+group_evaluation_function --> group_feedback_callback : return score
+group_feedback_callback -> group_feedback_function : calls
+
+loop for all questions in group
+    group_feedback_callback -> feedback_callback : calls
+    feedback_callback -> evaluation_function : calls
+    evaluation_function --> feedback_callback: return score
+    feedback_callback -> feedback_function : calls
+end
+
+
+@enduml

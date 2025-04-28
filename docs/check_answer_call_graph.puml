@@ -1,0 +1,29 @@
+@startuml "Check answer call graph"
+skinparam componentStyle rectangle
+actor user
+["Check answer"-button] as check_answer
+[group_feedback_callback]
+[group_feedback_function]
+[group_evaluation_function]
+
+component "For each question" {
+    [feedback_callback]
+    [evaluation_function]
+    [feedback_function]
+}
+
+
+
+user -> check_answer : clicks
+check_answer --> group_feedback_callback : calls
+group_feedback_callback --> group_evaluation_function : calls
+group_evaluation_function .> group_feedback_function : return value passed to
+group_feedback_callback --> group_feedback_function : calls
+group_feedback_callback --> feedback_callback : calls
+group_evaluation_function --> evaluation_function : calls
+
+feedback_callback --> feedback_function : calls
+feedback_callback --> evaluation_function : calls
+evaluation_function .> feedback_function: return value passed to
+
+@enduml
