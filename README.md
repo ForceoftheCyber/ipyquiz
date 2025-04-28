@@ -53,6 +53,7 @@ There are three main question types:
 - `MULTIPLE_CHOICE`: Either one or multiple correct answers
 - `NUMERIC`: Answer is a float.
 - `TEXT`: No input, solution will be shown on click of a button.
+    - **Note**: When using TEXT-questions as part of a group, they will be treated as if they have been answered correct in the evaluation (since they have no input). The value set in `passing_threshold` should take this into consideration. 
 
 These question types are supported in the `QuestionPackage`-format, but can also be called directly with their respective functions: `multple_choice(question: Question)`, `multiple_answers(question: Question)`, `numeric_input(question: Question)` or `no_input_question(question: Question)`. 
 
