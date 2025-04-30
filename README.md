@@ -106,3 +106,6 @@ questions = {
     # }   
 }
 ```
+
+## Contributing/Developers
+See [CONTRIBUTE.md](CONTRIBUTE.md) and [docs/architecture.md](docs/architecture.md) for useful information for developers that want to build upon the software.
